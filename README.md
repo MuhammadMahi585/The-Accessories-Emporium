@@ -110,7 +110,6 @@ https://xpcomputers.shop
 - **API Requests**: Axios
 - **Auth**: JWT with HTTP‑only cookies
 - **Database**: MongoDB via Mongoose
-- **Payment Gateway**: Stripe
 
 
 ---
