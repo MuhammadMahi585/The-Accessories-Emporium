@@ -18,6 +18,9 @@ import {
   FiClock,
   FiPackage,
   FiAlertCircle,
+  FiMenu,
+  FiChevronLeft,
+  FiX,
 } from 'react-icons/fi';
 
 function LoadingSpinner() {
@@ -59,6 +62,8 @@ function AdminDashboardContent() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [orders, setOrders] = useState([]);
   const [analyticsView, setAnalyticsView] = useState('studio');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [checked, setChecked] = useState(false); 
 
 
@@ -440,6 +445,7 @@ const handleStatus = async (e, orderId) => {
     { id: 'orders', label: 'Orders', icon: FiShoppingCart },
     { id: 'analytics', label: 'Analytics', icon: FiActivity },
   ];
+  const currentTabLabel = tab === 'add-product' ? 'Add Product' : tab === 'products' ? 'Product Management' : tab === 'orders' ? 'Order Operations' : 'Analytics Studio';
 
   if (auth.isLoading || !checked) {
     return <div className="bg-[var(--background)] flex justify-center items-center h-screen">
@@ -448,36 +454,63 @@ const handleStatus = async (e, orderId) => {
   
   return (
     <div className="min-h-screen px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto flex max-w-[1600px] flex-col gap-6 xl:flex-row">
-        <aside className="xl:sticky xl:top-6 xl:h-[calc(100vh-3rem)] xl:w-[320px] xl:flex-shrink-0">
-          <div className="surface-card flex h-full flex-col overflow-hidden rounded-[2rem]">
+      <div
+        className={`fixed inset-0 z-40 bg-stone-950/35 backdrop-blur-sm transition lg:hidden ${
+          mobileSidebarOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
+        }`}
+        onClick={() => setMobileSidebarOpen(false)}
+      />
+      <div className="mx-auto flex max-w-[1600px] flex-col gap-6 lg:flex-row">
+        <aside
+          className={`fixed inset-y-4 left-4 z-50 w-[88vw] max-w-[340px] transition duration-300 lg:static lg:inset-auto lg:z-auto lg:max-w-none lg:translate-x-0 ${
+            mobileSidebarOpen ? 'translate-x-0' : '-translate-x-[120%]'
+          } ${sidebarCollapsed ? 'lg:w-[112px]' : 'lg:w-[340px]'} lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)] lg:flex-shrink-0`}
+        >
+          <div className="surface-card flex h-full flex-col overflow-y-auto rounded-[2rem]">
             <div className="border-b border-[var(--line)] bg-[linear-gradient(145deg,#fff5e8_0%,#fffaf4_42%,#f6e8d4_100%)] p-6">
-              <span className="pill-label mb-4">Admin Control Center</span>
-              <h1 className="text-3xl font-extrabold text-stone-900">The Accesories Emporium Admin</h1>
-              <p className="mt-3 text-sm text-stone-600">
-                Manage catalog updates, review orders, and monitor store performance from one dashboard.
-              </p>
+              <div className="flex items-start justify-between gap-3">
+                <div className={sidebarCollapsed ? 'lg:text-center' : ''}>
+                  <span className={`pill-label mb-4 ${sidebarCollapsed ? 'lg:justify-center lg:px-3' : ''}`}>
+                    {sidebarCollapsed ? 'AE' : 'Admin Control Center'}
+                  </span>
+                  <h1 className={`font-extrabold leading-tight text-stone-900 ${sidebarCollapsed ? 'text-2xl lg:text-center' : 'text-2xl xl:text-[1.75rem]'}`}>
+                    {sidebarCollapsed ? 'AE' : 'The Accesories Emporium Admin'}
+                  </h1>
+                  {!sidebarCollapsed && (
+                    <p className="mt-3 text-sm text-stone-600">
+                      Manage catalog updates, review orders, and monitor store performance from one dashboard.
+                    </p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMobileSidebarOpen(false)}
+                  className="rounded-xl bg-white/80 p-2 text-stone-700 lg:hidden"
+                >
+                  <FiX />
+                </button>
+              </div>
             </div>
 
-            <div className="p-5">
-              <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+            <div className="p-5 pb-4">
+              <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
                 <div className="rounded-2xl border border-[var(--line)] bg-white/75 px-4 py-4 shadow-sm">
-                  <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Products</p>
-                  <p className="mt-2 text-lg font-bold text-stone-900">{products.length}</p>
+                  {!sidebarCollapsed && <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Products</p>}
+                  <p className={`font-bold text-stone-900 ${sidebarCollapsed ? 'text-center text-2xl' : 'mt-2 text-lg'}`}>{products.length}</p>
                 </div>
                 <div className="rounded-2xl border border-[var(--line)] bg-white/75 px-4 py-4 shadow-sm">
-                  <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Orders</p>
-                  <p className="mt-2 text-lg font-bold text-stone-900">{orders.length}</p>
+                  {!sidebarCollapsed && <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Orders</p>}
+                  <p className={`font-bold text-stone-900 ${sidebarCollapsed ? 'text-center text-2xl' : 'mt-2 text-lg'}`}>{orders.length}</p>
                 </div>
                 <div className="rounded-2xl border border-[var(--line)] bg-white/75 px-4 py-4 shadow-sm">
-                  <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Pending</p>
-                  <p className="mt-2 text-lg font-bold text-stone-900">{orders.filter((order) => order.status === 'pending' || order.status === 'processing').length}</p>
+                  {!sidebarCollapsed && <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Pending</p>}
+                  <p className={`font-bold text-stone-900 ${sidebarCollapsed ? 'text-center text-2xl' : 'mt-2 text-lg'}`}>{orders.filter((order) => order.status === 'pending' || order.status === 'processing').length}</p>
                 </div>
               </div>
             </div>
 
             <div className="border-t border-[var(--line)] px-5 py-5">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">Workspace</p>
+              {!sidebarCollapsed && <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">Workspace</p>}
               <nav className="grid gap-2">
                 {adminNavItems.map((item) => {
                   const Icon = item.icon;
@@ -486,40 +519,49 @@ const handleStatus = async (e, orderId) => {
                   return (
                     <button
                       key={item.id}
-                      onClick={() => router.push(`/components/dashboard/admin?tab=${item.id}`)}
-                      className={`flex items-center justify-between rounded-[1.25rem] px-4 py-3 text-left text-sm font-semibold transition ${
+                      onClick={() => {
+                        router.push(`/components/dashboard/admin?tab=${item.id}`);
+                        setMobileSidebarOpen(false);
+                      }}
+                      className={`relative flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'} rounded-[1.25rem] px-4 py-3 text-left text-sm font-semibold transition ${
                         isActive
-                          ? 'bg-[linear-gradient(120deg,#e55812,#ff8a3c)] text-white shadow-lg shadow-orange-900/15'
+                          ? 'bg-[linear-gradient(120deg,#e55812,#ff8a3c)] text-white shadow-[0_18px_30px_rgba(145,62,16,0.24)]'
                           : 'bg-white/65 text-stone-700 hover:bg-[var(--surface)] hover:text-stone-900'
                       }`}
+                      title={sidebarCollapsed ? item.label : undefined}
                     >
-                      <span className="flex items-center gap-3">
-                        <span className={`rounded-xl p-2 ${isActive ? 'bg-white/12' : 'bg-stone-100 text-stone-600'}`}>
-                          <Icon />
+                      {isActive && <span className="absolute left-0 top-3 bottom-3 w-1 rounded-r-full bg-white/80" />}
+                      <span className={`rounded-xl p-2 ${isActive ? 'bg-white/12 text-white' : 'bg-stone-100 text-stone-600'}`}>
+                        <Icon />
+                      </span>
+                      {!sidebarCollapsed && (
+                        <span className="min-w-0 flex-1 break-words leading-tight">
+                          {item.label}
                         </span>
-                        {item.label}
-                      </span>
-                      <span className={`text-xs uppercase tracking-[0.18em] ${isActive ? 'text-orange-50/80' : 'text-stone-400'}`}>
-                        Open
-                      </span>
+                      )}
                     </button>
                   );
                 })}
               </nav>
             </div>
 
-            <div className="mt-auto border-t border-[var(--line)] p-5">
+            <div className="border-t border-[var(--line)] p-5">
               <div className="rounded-[1.5rem] bg-[linear-gradient(160deg,#201611_0%,#3d2414_55%,#7b431d_100%)] p-5 text-white shadow-xl">
-                <p className="text-xs uppercase tracking-[0.18em] text-orange-200">Operations Mode</p>
-                <p className="mt-2 text-lg font-bold">Admin command center</p>
-                <p className="mt-2 text-sm text-orange-100/85">
-                  Switch sections, manage orders, and monitor inventory from a focused workspace.
-                </p>
+                {!sidebarCollapsed && (
+                  <>
+                    <p className="text-xs uppercase tracking-[0.18em] text-orange-200">Operations Mode</p>
+                    <p className="mt-2 text-lg font-bold">Admin command center</p>
+                    <p className="mt-2 text-sm text-orange-100/85">
+                      Switch sections, manage orders, and monitor inventory from a focused workspace.
+                    </p>
+                  </>
+                )}
                 <button
                   onClick={logout}
-                  className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-stone-900 transition hover:bg-orange-50"
+                  className={`inline-flex items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-stone-900 transition hover:bg-orange-50 ${sidebarCollapsed ? 'w-full' : 'mt-5 w-full'}`}
+                  title={sidebarCollapsed ? 'Logout' : undefined}
                 >
-                  <FiLogOut /> Logout
+                  <FiLogOut /> {!sidebarCollapsed && 'Logout'}
                 </button>
               </div>
             </div>
@@ -531,9 +573,28 @@ const handleStatus = async (e, orderId) => {
             <div className="border-b border-[var(--line)] bg-[linear-gradient(120deg,#fff8ef_0%,#fffaf4_42%,#f7eddc_100%)] px-6 py-6 sm:px-8">
               <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
                 <div>
+                  <div className="mb-4 flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setMobileSidebarOpen(true)}
+                      className="inline-flex items-center justify-center rounded-xl border border-[var(--line)] bg-white/80 p-3 text-stone-700 shadow-sm lg:hidden"
+                    >
+                      <FiMenu />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSidebarCollapsed((current) => !current)}
+                      className="hidden items-center justify-center rounded-xl border border-[var(--line)] bg-white/80 p-3 text-stone-700 shadow-sm lg:inline-flex"
+                    >
+                      <FiChevronLeft className={`transition-transform ${sidebarCollapsed ? 'rotate-180' : ''}`} />
+                    </button>
+                    <span className="rounded-full border border-[var(--line)] bg-white/75 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
+                      {currentTabLabel}
+                    </span>
+                  </div>
                   <p className="text-xs uppercase tracking-[0.2em] text-stone-500">Admin Workspace</p>
                   <h2 className="mt-2 text-3xl font-extrabold text-stone-900">
-                    {tab === 'add-product' ? 'Add Product' : tab === 'products' ? 'Product Management' : tab === 'orders' ? 'Order Operations' : 'Analytics Studio'}
+                    {currentTabLabel}
                   </h2>
                   <p className="mt-3 max-w-3xl text-sm text-stone-600 sm:text-base">
                     {tab === 'add-product'
@@ -653,6 +714,16 @@ const handleStatus = async (e, orderId) => {
                     className="text-gray-600 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-gray-600 focus:border-gray-600"
                   />
                 </div>
+
+                {formData.images?.[0] && !formData.displayImage && (
+                  <button
+                    type="button"
+                    onClick={() => setFormData((prev) => ({ ...prev, displayImage: prev.images[0] }))}
+                    className="mt-4 rounded-full border border-[var(--line)] bg-white/80 px-4 py-2 text-sm font-semibold text-stone-700 shadow-sm transition hover:bg-white"
+                  >
+                    Use First Product Image as Display Draft
+                  </button>
+                )}
 
                 {formData.displayImage && (
                   <div className="mt-4">
@@ -908,6 +979,16 @@ const handleStatus = async (e, orderId) => {
                       className="text-stone-800 mt-1 w-full border border-[var(--line)] bg-[var(--surface)] rounded-xl px-3 py-2 text-sm"
                     />
                   </label>
+
+                  {!product.displayImage && product.images?.[0] && (
+                    <button
+                      type="button"
+                      onClick={() => handleEditChange(product._id, 'displayImage', product.images[0])}
+                      className="mt-3 rounded-full border border-[var(--line)] bg-white/80 px-4 py-2 text-xs font-semibold text-stone-700 shadow-sm transition hover:bg-white"
+                    >
+                      Use Current Main Image as Display Draft
+                    </button>
+                  )}
 
                   {/* Stock Status */}
                   <span
@@ -1170,8 +1251,9 @@ const handleStatus = async (e, orderId) => {
                         Last all-time pattern
                       </span>
                     </div>
-                    <div className="grid grid-cols-7 gap-3">
-                      {weekdayDemand.map((day) => (
+                    <div className="-mx-1 overflow-x-auto pb-2">
+                      <div className="grid min-w-[630px] grid-cols-7 gap-3 px-1">
+                        {weekdayDemand.map((day) => (
                         <div key={day.label} className="rounded-[1.25rem] border border-[var(--line)] bg-[var(--surface)] p-3 text-center">
                           <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-stone-500">{day.label}</p>
                           <div className="mt-4 flex h-28 items-end justify-center">
@@ -1184,6 +1266,7 @@ const handleStatus = async (e, orderId) => {
                           <p className="text-xs text-stone-500">Rs {Math.round(day.revenue).toLocaleString()}</p>
                         </div>
                       ))}
+                      </div>
                     </div>
                   </div>
 

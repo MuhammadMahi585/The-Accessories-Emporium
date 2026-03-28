@@ -1,5 +1,6 @@
 'use client'
 import PublicNavigation from "./navigation/page";
+import StoreAssistant from "../shared/StoreAssistant";
 
 export default function LayoutBeforeLogin({ children }) {
     return (
@@ -8,6 +9,7 @@ export default function LayoutBeforeLogin({ children }) {
         <PublicNavigation />
         {/* Main content */}
         <main className="flex-grow">{children}</main> {/* Adjust padding here if necessary */}
+        <StoreAssistant />
       </div>
     );
 }

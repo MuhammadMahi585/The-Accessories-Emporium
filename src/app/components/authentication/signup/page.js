@@ -104,17 +104,17 @@ export default function SignupPage() {
 
   return (
     <div className="flex flex-col">
-      <div className="flex min-h-screen flex-col lg:flex-row">
-        <div className="ambient-grid relative flex w-full flex-col justify-center overflow-hidden bg-[linear-gradient(160deg,#15100c_0%,#2f1d10_60%,#573116_100%)] p-6 text-white shadow-lg md:p-12 lg:h-screen lg:w-[48%]">
+      <div className="flex min-h-screen flex-col xl:flex-row">
+        <div className="ambient-grid relative flex w-full flex-col justify-center overflow-hidden bg-[linear-gradient(160deg,#15100c_0%,#2f1d10_60%,#573116_100%)] p-6 text-white shadow-lg md:p-10 xl:h-screen xl:w-[46%] xl:p-12">
           <div className="absolute -top-20 left-10 h-72 w-72 rounded-full bg-orange-500/25 blur-3xl" />
           <div className="absolute bottom-10 right-10 h-48 w-48 rounded-full bg-amber-300/20 blur-2xl" />
-          <div className="relative z-10 max-w-md">
+          <div className="relative z-10 mx-auto max-w-2xl xl:mx-0 xl:max-w-md">
             <span className="pill-label mb-5 border-white/15 bg-white/10 text-orange-50">New Customer Access</span>
             <motion.div
               variants={container}
               initial="hidden"
               animate="visible"
-              className="mb-4 text-left text-3xl font-extrabold leading-tight sm:text-4xl lg:text-5xl"
+              className="mb-4 text-left text-3xl font-extrabold leading-tight sm:text-4xl lg:text-[2.8rem] xl:text-5xl"
             >
               {letters.map((char, index) => (
                 <motion.span key={index} variants={child}>
@@ -123,11 +123,11 @@ export default function SignupPage() {
               ))}
             </motion.div>
 
-            <p className="mb-6 text-left text-base text-stone-200 md:text-xl lg:mb-8">
+            <p className="mb-6 max-w-xl text-left text-base leading-relaxed text-stone-200 md:text-xl xl:mb-8">
               Create your account and unlock better prices, faster checkout, and order tracking.
             </p>
 
-            <div className="mt-10 grid gap-3 text-sm sm:grid-cols-2">
+            <div className="mt-8 grid gap-3 text-sm sm:grid-cols-2 xl:mt-10">
               {[
                 { icon: FiStar, title: "Exclusive offers", text: "Create an account to shop with a smoother experience." },
                 { icon: FiShield, title: "Protected details", text: "Your profile and address stay organized in one place." },
@@ -150,8 +150,8 @@ export default function SignupPage() {
           </div>
         </div>
 
-        <div className="flex w-full items-center justify-center overflow-auto p-6 md:p-12 lg:h-screen lg:w-[52%]">
-          <div className="surface-card w-full max-w-2xl rounded-[2rem] p-7 sm:p-9">
+        <div className="flex w-full items-center justify-center overflow-auto p-5 sm:p-8 lg:p-10 xl:h-screen xl:w-[54%] xl:p-12">
+          <div className="surface-card w-full max-w-2xl rounded-[2rem] p-6 sm:p-8">
             <p className="mb-3 text-xs uppercase tracking-[0.22em] text-stone-500">Get Started</p>
             <h2 className="mb-6 text-3xl font-extrabold text-stone-900 sm:text-4xl">Create Account</h2>
 
@@ -355,7 +355,7 @@ export default function SignupPage() {
         </div>
       </div>
 
-      <section className="flex min-h-screen w-full items-center justify-center p-6 sm:p-12">
+      <section className="flex w-full items-center justify-center px-6 py-16 sm:px-12 sm:py-20">
         <div className="max-w-4xl text-center">
           <h2 className="mb-6 text-3xl font-bold text-stone-900 sm:text-4xl">Why Join Us?</h2>
           <div className="mt-8 grid grid-cols-1 gap-8 sm:mt-12 sm:grid-cols-2 md:grid-cols-3">
@@ -374,7 +374,7 @@ export default function SignupPage() {
         </div>
       </section>
 
-      <section className="flex min-h-screen w-full items-center justify-center bg-[#f0e7db] p-6 sm:p-12">
+      <section className="flex w-full items-center justify-center bg-[#f0e7db] px-6 py-16 sm:px-12 sm:py-20">
         <div className="max-w-4xl text-center">
           <h2 className="mb-6 text-3xl font-bold text-stone-900 sm:text-4xl">Our Happy Customers</h2>
           <div className="mt-8 grid grid-cols-1 gap-8 sm:mt-12 sm:grid-cols-2 md:grid-cols-3">
@@ -394,17 +394,19 @@ export default function SignupPage() {
         </div>
       </section>
 
-      <footer className="bg-[#1d1813] px-6 py-12 text-white">
-        <div className="mx-auto grid max-w-screen-xl grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-3">
+      <footer className="border-t border-[rgba(87,49,22,0.08)] bg-[linear-gradient(180deg,#1b140f_0%,#261911_100%)] px-6 py-12 text-white">
+        <div className="mx-auto grid max-w-screen-xl gap-8 md:grid-cols-[1.2fr_0.8fr_0.8fr]">
           <div>
             <h3 className="mb-2 text-2xl font-bold">The Accesories Emporium</h3>
-            <p className="mb-4 text-stone-300">Your complete computer solution</p>
-            <p>Satellite 6th Road, Rawalpindi</p>
-            <p>03353411153</p>
-            <p>theaccessories@gmail.com</p>
+            <p className="mb-4 max-w-sm text-stone-300">Your complete computer solution with a warmer, modern storefront experience.</p>
+            <div className="space-y-1 text-sm text-stone-200">
+              <p>Satellite 6th Road, Rawalpindi</p>
+              <p>03353411153</p>
+              <p>theaccessories@gmail.com</p>
+            </div>
           </div>
           <div>
-            <h4 className="mb-2 text-xl font-semibold">Quick Links</h4>
+            <h4 className="mb-3 text-lg font-semibold">Quick Links</h4>
             <ul className="space-y-1">
               <li><a href="/components/authentication/login" className="hover:underline">Home</a></li>
               <li><a href="/components/authentication/login" className="hover:underline">Login</a></li>
@@ -412,14 +414,14 @@ export default function SignupPage() {
             </ul>
           </div>
           <div>
-            <h4 className="mb-2 text-xl font-semibold">Follow Us</h4>
-            <div className="flex space-x-4">
+            <h4 className="mb-3 text-lg font-semibold">Follow Us</h4>
+            <div className="flex flex-wrap gap-4">
               <a href="https://www.facebook.com/Nainmahessar" target="_blank" rel="noopener noreferrer" className="text-stone-300 hover:text-white">Facebook</a>
               <a href="https://www.instagram.com/xpcomputer" target="_blank" rel="noopener noreferrer" className="text-stone-300 hover:text-white">Instagram</a>
             </div>
           </div>
         </div>
-        <div className="mt-8 border-t border-stone-700 pt-6 text-center text-xs text-stone-400 sm:text-sm">
+        <div className="mt-8 border-t border-stone-700/70 pt-6 text-center text-xs text-stone-400 sm:text-sm">
           &copy; {new Date().getFullYear()} The Accesories Emporium. All rights reserved.
         </div>
       </footer>

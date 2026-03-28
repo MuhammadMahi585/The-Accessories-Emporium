@@ -32,13 +32,13 @@ export default function PublicNavigation() {
       animate="visible"
       className="sticky top-0 z-50 border-b border-white/30 bg-[rgba(255,248,239,0.78)] backdrop-blur-xl"
     >
-      <div className="section-shell flex flex-col gap-4 py-4 lg:flex-row lg:items-center lg:justify-between">
+      <div className="section-shell flex flex-col gap-4 py-3 sm:py-4 lg:flex-row lg:items-center lg:justify-between">
         <motion.button
           variants={itemMotion}
           whileHover={{ y: -2 }}
           whileTap={{ scale: 0.98 }}
           onClick={() => router.push('/components/authentication/login')}
-          className="flex items-center gap-3 text-left"
+          className="flex items-center gap-3 text-left sm:self-start"
         >
           <motion.div
             animate={{ y: [0, -2, 0] }}
@@ -47,15 +47,15 @@ export default function PublicNavigation() {
           >
             AE
           </motion.div>
-          <div>
-            <p className="text-lg font-extrabold text-stone-900 sm:text-xl">The Accesories Emporium</p>
-            <p className="text-xs uppercase tracking-[0.24em] text-stone-500">Curated tech storefront</p>
+          <div className="min-w-0">
+            <p className="text-base font-extrabold leading-tight text-stone-900 sm:text-xl">The Accesories Emporium</p>
+            <p className="text-[10px] uppercase tracking-[0.22em] text-stone-500 sm:text-xs">Curated tech storefront</p>
           </div>
         </motion.button>
 
-        <motion.div variants={itemMotion} className="flex flex-col gap-3 lg:flex-row lg:items-center">
-          <nav className="glass-panel rounded-full px-2 py-2">
-            <ul className="flex flex-wrap items-center justify-center gap-1 text-sm font-medium text-stone-700">
+        <motion.div variants={itemMotion} className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-end">
+          <nav className="glass-panel w-full rounded-[1.75rem] px-2 py-2 lg:w-auto lg:rounded-full">
+            <ul className="flex flex-wrap items-center justify-center gap-1 text-sm font-medium text-stone-700 sm:justify-start lg:justify-center">
               <motion.li
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -64,7 +64,7 @@ export default function PublicNavigation() {
               >
                 <motion.button
                   onClick={() => router.push('/components/customerComponents/products')}
-                  className="flex items-center gap-2 rounded-full px-4 py-2 transition hover:bg-white/70 hover:text-stone-900"
+                  className="flex min-h-[42px] items-center gap-2 rounded-full px-3 py-2 transition hover:bg-white/70 hover:text-stone-900 sm:px-4"
                   whileHover={{ y: -2, scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -77,7 +77,7 @@ export default function PublicNavigation() {
 
           <motion.button
             onClick={() => router.push('/components/authentication/login')}
-            className="brand-button flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold shadow-lg shadow-orange-900/15"
+            className="brand-button flex w-full items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold shadow-lg shadow-orange-900/15 lg:w-auto"
             whileHover={{ y: -2, scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >

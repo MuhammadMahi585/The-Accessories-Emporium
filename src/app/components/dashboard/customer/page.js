@@ -141,7 +141,12 @@ const Home = () => {
             </div>
           </div>
 
-          <div className="glass-panel relative rounded-[2rem] p-5 sm:p-7">
+          <motion.div
+            className="glass-panel relative rounded-[2rem] p-5 sm:p-7"
+            whileHover={{ y: -6, rotateX: 4, rotateY: -4 }}
+            transition={{ duration: 0.35 }}
+            style={{ transformStyle: "preserve-3d" }}
+          >
             <div className="rounded-[1.75rem] bg-[linear-gradient(160deg,#201611_0%,#3d2414_55%,#7b431d_100%)] p-6 text-white shadow-2xl">
               <div className="flex items-center justify-between gap-4">
                 <div>
@@ -179,7 +184,7 @@ const Home = () => {
                 </p>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -212,20 +217,26 @@ const Home = () => {
 
           <div className="grid gap-5 md:grid-cols-3">
             {productCategories.map((item) => (
-              <div key={item.name} className="surface-card group overflow-hidden rounded-[2rem]">
+              <motion.div
+                key={item.name}
+                className="surface-card group overflow-hidden rounded-[2rem]"
+                whileHover={{ y: -8, rotateX: 5, rotateY: -5 }}
+                transition={{ duration: 0.32 }}
+                style={{ transformStyle: "preserve-3d" }}
+              >
                 <div className="relative flex h-56 items-center justify-center overflow-hidden bg-[linear-gradient(180deg,#f8efe2_0%,#efe0ca_100%)] p-6">
                   <div className="absolute inset-x-8 top-4 h-24 rounded-full bg-orange-200/50 blur-3xl transition duration-300 group-hover:scale-110" />
                   <img
                     src={item.image}
                     alt={item.name}
-                    className="relative z-10 h-full w-full object-contain transition duration-300 group-hover:scale-105"
+                    className="relative z-10 h-full w-full object-contain transition duration-300 group-hover:scale-110 group-hover:-translate-y-2"
                   />
                 </div>
                 <div className="p-6">
                   <h3 className="text-xl font-semibold text-stone-900">{item.name}</h3>
                   <p className="mt-2 text-sm text-stone-600">{item.description}</p>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
