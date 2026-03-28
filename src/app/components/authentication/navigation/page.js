@@ -1,48 +1,92 @@
 'use client'
-import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import axios from 'axios'
-import { useAuth } from '@/app/context/AuthContext'
-import {FiBox, FiLogIn } from 'react-icons/fi';
-import 'primeicons/primeicons.css';
-        
+import { FiArrowUpRight, FiBox, FiLogIn } from 'react-icons/fi'
+import { motion } from 'framer-motion'
+import 'primeicons/primeicons.css'
 
 export default function PublicNavigation() {
   const router = useRouter()
-  const {auth} = useAuth()
 
+  const headerMotion = {
+    hidden: { opacity: 0, y: -18 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1], staggerChildren: 0.08 }
+    }
+  }
 
+  const itemMotion = {
+    hidden: { opacity: 0, y: -12 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] }
+    }
+  }
 
   return (
-<header className="mb-0 bg-gradient-to-r from-gray-600 via-gray-800 to-gray-900 text-white shadow-lg sticky top-0 z-50">
-      <div className="container mx-auto px-4 py-4 md:py-6 flex flex-col md:flex-row justify-between items-center animate-fade-in">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight mb-4 md:mb-0">
-          <span className="text-yellow-300">XP</span> Computers
-        </h1>
+    <motion.header
+      variants={headerMotion}
+      initial="hidden"
+      animate="visible"
+      className="sticky top-0 z-50 border-b border-white/30 bg-[rgba(255,248,239,0.78)] backdrop-blur-xl"
+    >
+      <div className="section-shell flex flex-col gap-4 py-4 lg:flex-row lg:items-center lg:justify-between">
+        <motion.button
+          variants={itemMotion}
+          whileHover={{ y: -2 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => router.push('/components/authentication/login')}
+          className="flex items-center gap-3 text-left"
+        >
+          <motion.div
+            animate={{ y: [0, -2, 0] }}
+            transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
+            className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#251912,#6f3b18)] text-sm font-bold text-orange-100 shadow-lg shadow-orange-900/20"
+          >
+            AE
+          </motion.div>
+          <div>
+            <p className="text-lg font-extrabold text-stone-900 sm:text-xl">The Accesories Emporium</p>
+            <p className="text-xs uppercase tracking-[0.24em] text-stone-500">Curated tech storefront</p>
+          </div>
+        </motion.button>
 
-        <nav>
-          <ul className="flex flex-wrap justify-center items-center gap-2 sm:gap-4 text-sm sm:text-base md:text-lg font-medium">
-            <li>
-              <a
-                onClick={() => router.replace("/components/customerComponents/products")}
-                className="flex items-center text-white-600 hover:text-gray-300 transition-colors duration-300 cursor-pointer"
+        <motion.div variants={itemMotion} className="flex flex-col gap-3 lg:flex-row lg:items-center">
+          <nav className="glass-panel rounded-full px-2 py-2">
+            <ul className="flex flex-wrap items-center justify-center gap-1 text-sm font-medium text-stone-700">
+              <motion.li
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.14, duration: 0.35 }}
+                className="list-none"
               >
-              
-                 <FiBox className="mr-1" /> Products
-              </a>
-            </li>
-            <li>
-              <a
-                onClick={() => router.replace("/components/authentication/login")}
-                className="flex items-center text-white-600 hover:text-gray-300 transition-colors duration-300 cursor-pointer"
-              >
-                <FiLogIn className="mr-1" /> Login
-               
-              </a>
-            </li>
-          </ul>
-        </nav>
+                <motion.button
+                  onClick={() => router.push('/components/customerComponents/products')}
+                  className="flex items-center gap-2 rounded-full px-4 py-2 transition hover:bg-white/70 hover:text-stone-900"
+                  whileHover={{ y: -2, scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <FiBox className="text-sm" />
+                  <span>Products</span>
+                </motion.button>
+              </motion.li>
+            </ul>
+          </nav>
+
+          <motion.button
+            onClick={() => router.push('/components/authentication/login')}
+            className="brand-button flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold shadow-lg shadow-orange-900/15"
+            whileHover={{ y: -2, scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <FiLogIn className="text-base" />
+            <span>Login</span>
+            <FiArrowUpRight className="text-base" />
+          </motion.button>
+        </motion.div>
       </div>
-    </header>
+    </motion.header>
   )
 }

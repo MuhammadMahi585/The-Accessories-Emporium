@@ -8,7 +8,7 @@ export async function PUT(req) {
   await dbConnect();
   
   try {
-    const { id, price, stock } = await req.json();
+    const { id, price, stock, displayImage } = await req.json();
 
     if (!id || price == null || stock == null) {
       return NextResponse.json(
@@ -17,11 +17,13 @@ export async function PUT(req) {
       );
     }
 
-    const updatedProduct = await Product.findByIdAndUpdate(
-      id,
-      { price, stock },
-      { new: true }
-    );
+    const updateData = { price, stock };
+
+    if (displayImage !== undefined) {
+      updateData.displayImage = displayImage;
+    }
+
+    const updatedProduct = await Product.findByIdAndUpdate(id, updateData, { new: true });
 
     if (!updatedProduct) {
       return NextResponse.json(

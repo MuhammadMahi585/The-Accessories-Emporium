@@ -4,23 +4,18 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
-import 'primeicons/primeicons.css';
-import Link from 'next/link'
-
-        
-
+import "primeicons/primeicons.css";
+import Link from "next/link";
+import { FiArrowRight, FiCheckCircle, FiMapPin, FiShield, FiShoppingBag, FiTruck } from "react-icons/fi";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { auth, setAuth } = useAuth();
   const router = useRouter();
   const [checked, setChecked] = useState(false);
-
-
-
 
   useEffect(() => {
     if (!auth.isLoading) {
@@ -29,9 +24,9 @@ export default function LoginPage() {
           auth.role === "admin"
             ? "/components/dashboard/admin"
             : "/components/dashboard/customer";
-        router.replace(target); // Safe redirect
+        router.replace(target);
       } else {
-        setChecked(true); 
+        setChecked(true);
       }
     }
   }, [auth, router]);
@@ -39,9 +34,9 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
     try {
-      const response = await axios.post('/api/authentication/login', {
+      const response = await axios.post("/api/authentication/login", {
         email,
         password,
       });
@@ -58,15 +53,15 @@ export default function LoginPage() {
         isLoading: false,
       });
 
-      router.replace(redirectTo); 
+      router.replace(redirectTo);
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      setError(err.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
     }
   };
 
-  const letters = ['X','P',' ','C','o','m','p','u','t','e','r','s'];
+  const letters = "The Accesories Emporium".split("");
 
   const container = {
     hidden: { opacity: 0 },
@@ -77,57 +72,76 @@ export default function LoginPage() {
   };
 
   const child = {
-    hidden: { opacity: 0, y: `0.25em` },
+    hidden: { opacity: 0, y: "0.25em" },
     visible: {
       opacity: 1,
-      y: `0em`,
+      y: "0em",
       transition: { duration: 2, ease: [0.2, 0.65, 0.3, 0.9] },
     },
   };
+
   if (auth.isLoading || !checked) {
-    return <div className="flex justify-center items-center h-screen bg-gray-700">
-      <i className="pi pi-spin pi-spinner" style={{ fontSize: '2rem' }}></i>
+    return <div className="flex justify-center items-center h-screen bg-neutral-900 text-white">
+      <i className="pi pi-spin pi-spinner" style={{ fontSize: "2rem" }}></i>
     </div>;
   }
 
-
   return (
-  
-    <div className="flex flex-col min-h-screen bg-white">
-
-      {/* Main Login Section */}
-      <div className="flex flex-col lg:flex-row min-h-screen">
-
-        {/* Left: Brand */}
-        <div className="w-full lg:w-1/2 bg-gray-600 text-white flex items-center justify-center p-6 md:p-12 h-[60vh] lg:h-auto">
-          <div className="max-w-md text-center">
+    <div className="flex min-h-screen flex-col">
+      <div className="flex min-h-screen flex-col lg:flex-row">
+        <div className="ambient-grid relative w-full overflow-hidden bg-[linear-gradient(145deg,#1b140f_0%,#2a1c13_50%,#442713_100%)] p-8 text-white sm:p-12 lg:w-[54%] lg:p-16">
+          <div className="absolute -top-20 -right-20 h-72 w-72 rounded-full bg-orange-500/20 blur-3xl" />
+          <div className="absolute bottom-8 left-10 h-44 w-44 rounded-full bg-amber-300/20 blur-2xl" />
+          <div className="relative z-10 max-w-5xl">
+            <span className="pill-label mb-6 border-white/15 bg-white/10 text-orange-50">The Accesories Emporium</span>
             <motion.div
               variants={container}
               initial="hidden"
               animate="visible"
-              className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4"
+              className="mb-5 text-3xl font-extrabold leading-tight sm:text-4xl lg:text-5xl"
             >
               {letters.map((char, i) => (
                 <motion.span key={i} variants={child}>
-                  {char === ' ' ? '\u00A0' : char}
+                  {char === " " ? "\u00A0" : char}
                 </motion.span>
               ))}
             </motion.div>
-            <p className="text-base md:text-xl">
-              Your trusted partner for all computer solutions
-              - sales, service, and support.
+            <p className="max-w-lg text-base text-stone-200 sm:text-lg lg:text-xl">
+              Premium systems, reliable accessories, and support that keeps your tech moving.
             </p>
+
+            <div className="mt-10 grid max-w-4xl gap-3 text-sm sm:grid-cols-2">
+              {[
+                { icon: FiTruck, title: "Fast delivery", text: "Local order handling with dependable updates." },
+                { icon: FiShield, title: "Trusted products", text: "Built around quality, compatibility, and value." },
+                { icon: FiShoppingBag, title: "Easy ordering", text: "Browse, save, and return to orders quickly." },
+                { icon: FiMapPin, title: "Store support", text: "Visit the branch when you want in-person help." },
+              ].map(({ icon: Icon, title, text }) => (
+                <div key={title} className="glass-panel rounded-2xl p-4 text-stone-800">
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-xl bg-[rgba(229,88,18,0.12)] p-2 text-[var(--brand)]">
+                      <Icon />
+                    </div>
+                    <div>
+                      <p className="font-semibold">{title}</p>
+                      <p className="mt-1 text-xs text-stone-600">{text}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Right: Form */}
-        <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-10 md:p-12 bg-gray-50">
-          <div className="w-full max-w-md">
-            <h2 className="text-3xl font-bold text-gray-600 mb-6">Welcome Back</h2>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {error && <div className="p-3 bg-red-100 text-red-700 rounded-md">{error}</div>}
+        <div className="flex w-full items-center justify-center p-6 sm:p-10 md:p-12 lg:w-[46%]">
+          <div className="surface-card w-full max-w-md rounded-[2rem] p-7 sm:p-9">
+            <p className="mb-3 text-xs uppercase tracking-[0.2em] text-stone-500">Member Access</p>
+            <h2 className="mb-2 text-3xl font-extrabold text-stone-900 sm:text-4xl">Welcome Back</h2>
+            <p className="mb-7 text-sm text-stone-600">Sign in to continue shopping and manage your orders.</p>
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {error && <div className="rounded-xl border border-red-200 bg-red-100 p-3 text-sm text-red-700">{error}</div>}
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
+                <label htmlFor="email" className="block text-sm font-medium text-stone-700">Email address</label>
                 <input
                   id="email"
                   name="email"
@@ -135,11 +149,11 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="text-gray-600 mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:ring-gray-600 focus:border-gray-600"
+                  className="mt-1 block w-full rounded-xl border border-[var(--line)] bg-[var(--surface)] px-4 py-3 text-stone-800 shadow-sm"
                 />
               </div>
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+                <label htmlFor="password" className="block text-sm font-medium text-stone-700">Password</label>
                 <input
                   id="password"
                   name="password"
@@ -147,94 +161,74 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="text-gray-600 mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:ring-gray-600 focus:border-gray-600"
+                  className="mt-1 block w-full rounded-xl border border-[var(--line)] bg-[var(--surface)] px-4 py-3 text-stone-800 shadow-sm"
                 />
               </div>
               <div className="flex items-center justify-between">
-                <label className="flex items-center text-sm text-gray-600">
-                  <input type="checkbox" className="h-4 w-4 text-gray-600 border-gray-300 rounded mr-2" />
+                <label className="flex items-center text-sm text-stone-600">
+                  <input type="checkbox" className="mr-2 h-4 w-4 rounded border-[var(--line)]" />
                   Remember me
                 </label>
-                <Link href="./signup" className="text-gray-600 hover:underline">Sign up?</Link>
+                <Link href="./signup" className="text-[var(--brand)] hover:underline">Create account</Link>
               </div>
               <button
                 type="submit"
                 disabled={loading}
-                className={`w-full flex justify-center py-3 px-4 rounded-md shadow-lg text-sm font-medium text-white bg-gray-600  ${
-                  loading ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90'
+                className={`brand-button flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold shadow-lg ${
+                  loading ? "cursor-not-allowed opacity-70" : "hover:opacity-90"
                 }`}
               >
-                {loading ? 'Signing in...' : 'Sign in'}
+                {loading ? "Signing in..." : "Sign in"}
+                {!loading && <FiArrowRight />}
               </button>
             </form>
+
+            <div className="mt-6 rounded-2xl border border-[var(--line)] bg-white/70 p-4">
+              <div className="flex items-start gap-3">
+                <div className="rounded-full bg-orange-100 p-2 text-[var(--brand)]">
+                  <FiCheckCircle />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-stone-900">Quick access to your account</p>
+                  <p className="mt-1 text-xs text-stone-600">
+                    Track orders, manage your profile, and browse products from one place.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Branches */}
-      <section className="w-full py-12 px-6 md:px-12 bg-white text-center">
-        <h2 className="text-4xl font-bold text-gray-600 mb-8">Our Branches</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {[
-            {
-              name: "Xp laptop Store",
-              location: "Saddar, Rawalpindi",
-              image: "/assets/Image/xp_laptop.jpg",
-            },
-            {
-              name: "New Xp Computer",
-              location: "6th Road Rawalpindi",
-              image: "/assets/Image/newxp.jpg",
-            },
-            {
-              name: "Xp Computer accessories",
-              location: "Saddar Rawalpindi",
-              image: "/assets/Image/xp_saddar.png",
-            },
-          ].map((branch, index) => (
-            <div key={index} className="rounded-lg overflow-hidden shadow-lg">
-              <img src={branch.image} alt={branch.name} className="w-full h-120 object-cover" />
-              <div className="p-4">
-                <h3 className="text-xl font-semibold text-gray-600">{branch.name}</h3>
-                <p className="text-gray-600">{branch.location}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-700 text-white py-12 px-6">
-        <div className="max-w-screen-xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+      <footer className="bg-[#1d1813] px-6 py-12 text-white">
+        <div className="mx-auto grid max-w-screen-xl grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-3">
           <div>
-            <h3 className="text-2xl font-bold mb-2">XP Computer</h3>
-            <p className="text-gray-400 mb-4">Your complete computer solution</p>
-            <p className="flex items-center space-x-2">📍 <span>Near Rania Mall, Saddar, Rawalpindi</span></p>
-            <p className="flex items-center space-x-2">📞 <span>+92 308 2269979</span></p>
-            <p className="flex items-center space-x-2">✉️ <span>xpcomputer789@gmail.com</span></p>
+            <h3 className="mb-2 text-2xl font-bold">The Accesories Emporium</h3>
+            <p className="mb-4 text-stone-300">Your complete computer solution</p>
+            <p>Satellite 6th Road, Rawalpindi</p>
+            <p>03353411153</p>
+            <p>theaccessories@gmail.com</p>
           </div>
           <div>
-            <h4 className="text-xl font-semibold mb-2">Quick Links</h4>
+            <h4 className="mb-2 text-xl font-semibold">Quick Links</h4>
             <ul className="space-y-1">
               <li><a href="/" className="hover:underline">Home</a></li>
               <li><a href="/components/authentication/login" className="hover:underline">Login</a></li>
               <li><a href="/components/authentication/signup" className="hover:underline">Sign Up</a></li>
-  
             </ul>
           </div>
           <div>
-            <h4 className="text-xl font-semibold mb-2">Follow Us</h4>
+            <h4 className="mb-2 text-xl font-semibold">Follow Us</h4>
             <div className="flex space-x-4">
-              <a href="https://www.facebook.com/Nainmahessar" target="_blank" rel="noopener noreferrer" className="hover:text-white">Facebook</a>
-              <a href="https://www.instagram.com/xpcomputer" target="_blank" rel="noopener noreferrer" className="hover:text-white">Instagram</a>
+              <a href="https://www.facebook.com/Nainmahessar" target="_blank" rel="noopener noreferrer" className="text-stone-300 hover:text-white">Facebook</a>
+              <a href="https://www.instagram.com/xpcomputer" target="_blank" rel="noopener noreferrer" className="text-stone-300 hover:text-white">Instagram</a>
             </div>
           </div>
         </div>
-        <div className="mt-8 border-t border-gray-700 pt-6 text-center text-gray-500 text-xs sm:text-sm">
-    © {new Date().getFullYear()} XP Computer. All rights reserved.
-     </div>
+        <div className="mt-8 border-t border-stone-700 pt-6 text-center text-xs text-stone-400 sm:text-sm">
+          &copy; {new Date().getFullYear()} The Accesories Emporium. All rights reserved.
+        </div>
       </footer>
     </div>
-    
-  )
+  );
 }

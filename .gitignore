@@ -39,3 +39,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local workspace-only files
+.agents/
+plugins/
+powerbi/
+temp_report/
+temp_report.zip
+CV_extracted.txt
+updated_cv_content.md
+generate_cv_docx.js
+*.docx
+*.pbix

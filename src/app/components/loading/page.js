@@ -1,11 +1,13 @@
 'use client'
 
-import 'primeicons/primeicons.css';
-        
-export default function Loading(){
-    return(
-        <div className="flex justify-center items-center h-screen bg-gray-700">
-        <i className="pi pi-spin pi-spinner" style={{ fontSize: '2rem' }}></i>
-      </div>
-    )
+import PremiumLoader from '../shared/PremiumLoader'
+
+export default function Loading() {
+  return (
+    <PremiumLoader
+      eyebrow="Storefront Loading"
+      title="The Accesories Emporium"
+      message="Bringing in your account, products, and latest storefront experience."
+    />
+  )
 }

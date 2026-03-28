@@ -6,7 +6,19 @@ import axios from 'axios';
 import { useAuth } from '@/app/context/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import 'primeicons/primeicons.css';
-import { FiSearch, FiPlus, FiEdit, FiTrash2, FiBox, FiShoppingCart, FiLogOut } from 'react-icons/fi';
+import {
+  FiSearch,
+  FiPlus,
+  FiBox,
+  FiShoppingCart,
+  FiLogOut,
+  FiActivity,
+  FiTrendingUp,
+  FiBarChart2,
+  FiClock,
+  FiPackage,
+  FiAlertCircle,
+} from 'react-icons/fi';
 
 function LoadingSpinner() {
   return (
@@ -33,17 +45,20 @@ function AdminDashboardContent() {
     category: 'Laptops',
     subcategory: '',
     stock: 0,
+    displayImage: '',
     images: []
   });
 
 
   const [file, setFile] = useState(null);
+  const [displayImageFile, setDisplayImageFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState(['All']);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [orders, setOrders] = useState([]);
+  const [analyticsView, setAnalyticsView] = useState('studio');
   const [checked, setChecked] = useState(false); 
 
 
@@ -67,15 +82,18 @@ useEffect(() => {
     fetchProducts();
   } else if (tab === "orders") {
     fetchOrders();
+  } else if (tab === "analytics") {
+    fetchProducts({ search: '', category: 'All' });
+    fetchOrders();
   }
 }, [tab, auth.isAuthenticated, auth.isLoading, searchTerm, selectedCategory]);
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (filters = {}) => {
     try {
       const response = await axios.get(`/api/products`, {
         params: {
-          search: searchTerm,
-          category: selectedCategory
+          search: filters.search ?? searchTerm,
+          category: filters.category ?? selectedCategory
         }
       });
       setProducts(response.data.data);
@@ -114,13 +132,15 @@ useEffect(() => {
 const handleSaveEdit = async (productId) => {
   if (!edits[productId]) return;
 
-  const { price, stock } = edits[productId];
+  const product = products.find((item) => item._id === productId);
+  const { price, stock, displayImage } = edits[productId];
 
   try {
     await axios.put("/api/products/editProduct", {
       id: productId,
-      price: parseFloat(price),
-      stock: parseInt(stock, 10),
+      price: parseFloat(price ?? product?.price),
+      stock: parseInt(stock ?? product?.stock, 10),
+      displayImage: displayImage ?? product?.displayImage ?? "",
     });
 
     alert('Product updated successfully');
@@ -140,20 +160,54 @@ const handleSaveEdit = async (productId) => {
   }
 };
   
+  const validateImageFile = (selectedFile) => {
+    if (!selectedFile) {
+      return { valid: false, message: 'Please select a file first!' };
+    }
+
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!validTypes.includes(selectedFile.type)) {
+      return { valid: false, message: 'Please select a valid image file (JPEG, PNG, or WebP)' };
+    }
+
+    if (selectedFile.size > 5 * 1024 * 1024) {
+      return { valid: false, message: 'File size too large (max 5MB)' };
+    }
+
+    return { valid: true };
+  };
+
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
-    if (selectedFile) {
-      const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
-      if (!validTypes.includes(selectedFile.type)) {
-        alert('Please select a valid image file (JPEG, PNG, or WebP)');
-        return;
-      }
-      if (selectedFile.size > 5 * 1024 * 1024) {
-        alert('File size too large (max 5MB)');
-        return;
-      }
-      setFile(selectedFile);
+    const validation = validateImageFile(selectedFile);
+    if (!validation.valid) {
+      alert(validation.message);
+      return;
     }
+    setFile(selectedFile);
+  };
+
+  const handleDisplayImageFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    const validation = validateImageFile(selectedFile);
+    if (!validation.valid) {
+      alert(validation.message);
+      return;
+    }
+    setDisplayImageFile(selectedFile);
+  };
+
+  const uploadImageFile = async (selectedFile) => {
+    const uploadFormData = new FormData();
+    uploadFormData.append('file', selectedFile);
+
+    const response = await axios.post('/api/upload', uploadFormData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+
+    return response.data.url;
   };
 
   const handleImageUpload = async () => {
@@ -162,21 +216,38 @@ const handleSaveEdit = async (productId) => {
       return;
     }
 
-    const uploadFormData = new FormData();
-    uploadFormData.append('file', file);
-
     try {
       setIsUploading(true);
-      const response = await axios.post('/api/upload', uploadFormData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+      const url = await uploadImageFile(file);
       
       setFormData(prev => ({
         ...prev,
-        images: [...prev.images, response.data.url]
+        images: [...prev.images, url]
       }));
+      setFile(null);
+    } catch (error) {
+      console.error('Upload failed:', error);
+      alert(error.response?.data?.error || 'Upload failed');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleDisplayImageUpload = async () => {
+    if (!displayImageFile) {
+      alert('Please select a cleaned product image first!');
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+      const url = await uploadImageFile(displayImageFile);
+
+      setFormData(prev => ({
+        ...prev,
+        displayImage: url
+      }));
+      setDisplayImageFile(null);
     } catch (error) {
       console.error('Upload failed:', error);
       alert(error.response?.data?.error || 'Upload failed');
@@ -197,6 +268,7 @@ const handleSaveEdit = async (productId) => {
         category: 'Laptops',
         subcategory: '',
         stock: 0,
+        displayImage: '',
         images: []
       });
       fetchProducts();
@@ -249,75 +321,256 @@ const handleStatus = async (e, orderId) => {
   }
 };
 
+  const activeOrders = orders.filter((order) => ['pending', 'processing', 'shipped'].includes(order.status));
+  const completedOrders = orders.filter((order) => order.status === 'delivered');
+  const cancelledOrders = orders.filter((order) => order.status === 'cancelled');
+  const totalRevenue = completedOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+  const averageOrderValue = completedOrders.length ? totalRevenue / completedOrders.length : 0;
+  const lowStockProducts = products.filter((product) => Number(product.stock) > 0 && Number(product.stock) <= 5);
+  const outOfStockProducts = products.filter((product) => Number(product.stock) <= 0);
+  const totalUnitsInStock = products.reduce((sum, product) => sum + Number(product.stock || 0), 0);
+
+  const recentOrders = [...orders]
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 6);
+
+  const revenueTrend = Array.from({ length: 6 }, (_, index) => {
+    const date = new Date();
+    date.setMonth(date.getMonth() - (5 - index));
+    const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
+    const monthOrders = completedOrders.filter((order) => {
+      const orderDate = new Date(order.createdAt);
+      return `${orderDate.getFullYear()}-${orderDate.getMonth()}` === monthKey;
+    });
+
+    return {
+      label: date.toLocaleDateString('en-US', { month: 'short' }),
+      revenue: monthOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0),
+      orders: monthOrders.length,
+    };
+  });
+
+  const maxRevenue = Math.max(...revenueTrend.map((item) => item.revenue), 1);
+  const revenueAreaPath = revenueTrend
+    .map((item, index) => {
+      const x = revenueTrend.length === 1 ? 320 : (index / (revenueTrend.length - 1)) * 320;
+      const y = 120 - (item.revenue / maxRevenue) * 88;
+      return `${index === 0 ? 'M' : 'L'} ${x} ${y}`;
+    })
+    .join(' ');
+  const revenueFillPath = `${revenueAreaPath} L 320 120 L 0 120 Z`;
+
+  const categorySales = Object.entries(
+    orders.reduce((acc, order) => {
+      order.items?.forEach((item) => {
+        const matchedProduct = products.find((product) => String(product._id) === String(item.productId));
+        const category = matchedProduct?.category || 'Other';
+        acc[category] = (acc[category] || 0) + (item.quantity * item.price);
+      });
+      return acc;
+    }, {})
+  )
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([category, revenue]) => ({ category, revenue }));
+
+  const categoryTotal = categorySales.reduce((sum, item) => sum + item.revenue, 0) || 1;
+
+  const fulfillmentMix = [
+    { label: 'Delivered', value: completedOrders.length, color: '#059669' },
+    { label: 'Active', value: activeOrders.length, color: '#ea580c' },
+    { label: 'Cancelled', value: cancelledOrders.length, color: '#e11d48' },
+  ];
+  const fulfillmentTotal = fulfillmentMix.reduce((sum, item) => sum + item.value, 0) || 1;
+
+  const topProducts = Object.values(
+    orders.reduce((acc, order) => {
+      order.items?.forEach((item) => {
+        if (!acc[item.productId]) {
+          acc[item.productId] = {
+            id: item.productId,
+            name: item.productName || 'Unknown Product',
+            units: 0,
+            revenue: 0,
+          };
+        }
+        acc[item.productId].units += item.quantity || 0;
+        acc[item.productId].revenue += (item.quantity || 0) * (item.price || 0);
+      });
+      return acc;
+    }, {})
+  )
+    .sort((a, b) => b.revenue - a.revenue)
+    .slice(0, 4);
+
+  const weekdayDemand = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((label, index) => {
+    const matchingOrders = orders.filter((order) => new Date(order.createdAt).getDay() === index);
+    return {
+      label,
+      orders: matchingOrders.length,
+      revenue: matchingOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0),
+    };
+  });
+  const maxWeekdayOrders = Math.max(...weekdayDemand.map((day) => day.orders), 1);
+
+  const inventoryByCategory = Object.entries(
+    products.reduce((acc, product) => {
+      const category = product.category || 'Other';
+      if (!acc[category]) {
+        acc[category] = { units: 0, lowStock: 0, products: 0 };
+      }
+      acc[category].units += Number(product.stock || 0);
+      acc[category].products += 1;
+      if (Number(product.stock || 0) <= 5) acc[category].lowStock += 1;
+      return acc;
+    }, {})
+  )
+    .map(([category, data]) => ({ category, ...data }))
+    .sort((a, b) => b.units - a.units)
+    .slice(0, 5);
+
+  const maxInventoryUnits = Math.max(...inventoryByCategory.map((item) => item.units), 1);
+
+  const fulfillmentRate = orders.length ? Math.round((completedOrders.length / orders.length) * 100) : 0;
+  const cancellationRate = orders.length ? Math.round((cancelledOrders.length / orders.length) * 100) : 0;
+  const sellThroughSignal = products.length ? Math.round((topProducts.reduce((sum, item) => sum + item.units, 0) / Math.max(totalUnitsInStock, 1)) * 100) : 0;
+  const adminNavItems = [
+    { id: 'add-product', label: 'Add Product', icon: FiPlus },
+    { id: 'products', label: 'Products', icon: FiBox },
+    { id: 'orders', label: 'Orders', icon: FiShoppingCart },
+    { id: 'analytics', label: 'Analytics', icon: FiActivity },
+  ];
+
   if (auth.isLoading || !checked) {
-    return <div className="bg-gray-700 flex justify-center items-center h-screen">
+    return <div className="bg-[var(--background)] flex justify-center items-center h-screen">
       <i className="pi pi-spin pi-spinner" style={{ fontSize: '2rem' }}></i></div>;
   }
   
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-gray-600 via-gray-800 to-gray-900 text-white p-4 shadow-md">
-        <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
-          <h1 className="text-2xl font-bold mb-4 md:mb-0">XP Computer Admin</h1>
-          
-          <nav className="w-full md:w-auto">
-            <ul className="flex flex-wrap justify-center gap-2 md:gap-4">
-              <li>
-                <button 
-                  onClick={() => router.push('/components/dashboard/admin?tab=add-product')}
-                  className={`flex items-center px-3 py-2 rounded ${tab === 'add-product' ? 'bg-gray-600 text-white-600' : 'hover:bg-gray-700'}`}
-                >
-                  <FiPlus className="mr-1" /> Add Product
-                </button>
-              </li>
-              <li>
-                <button 
-                  onClick={() => router.push('/components/dashboard/admin?tab=products')}
-                  className={`flex items-center px-3 py-2 rounded ${tab === 'products' ? 'bg-gray-600 text-white-600' : 'hover:bg-gray-700'}`}
-                >
-                  <FiBox className="mr-1" /> Products
-                </button>
-              </li>
-              <li>
-                <button 
-                  onClick={() => router.push('/components/dashboard/admin?tab=orders')}
-                  className={`flex items-center px-3 py-2 rounded ${tab === 'orders' ? 'bg-gray-600 text-white-600' : 'hover:bg-gray-700'}`}
-                >
-                  <FiShoppingCart className="mr-1" /> Orders
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => router.push('/components/dashboard/admin?tab=analytics')}
-                  className={`flex items-center px-3 py-2 rounded ${tab === 'analytics' ? 'bg-gray-600 text-white-600' : 'hover:bg-gray-700'}`}
-                >
-                  Analytics
-                </button>
-              </li>
-              <li>
-                <button 
-                  onClick={logout}
-                  className="flex items-center px-3 py-2 rounded text-white-600' hover:bg-gray-600"
-                >
-                  <FiLogOut className="mr-1" /> Logout
-                </button>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      </header>
+    <div className="min-h-screen px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-[1600px] flex-col gap-6 xl:flex-row">
+        <aside className="xl:sticky xl:top-6 xl:h-[calc(100vh-3rem)] xl:w-[320px] xl:flex-shrink-0">
+          <div className="surface-card flex h-full flex-col overflow-hidden rounded-[2rem]">
+            <div className="border-b border-[var(--line)] bg-[linear-gradient(145deg,#fff5e8_0%,#fffaf4_42%,#f6e8d4_100%)] p-6">
+              <span className="pill-label mb-4">Admin Control Center</span>
+              <h1 className="text-3xl font-extrabold text-stone-900">The Accesories Emporium Admin</h1>
+              <p className="mt-3 text-sm text-stone-600">
+                Manage catalog updates, review orders, and monitor store performance from one dashboard.
+              </p>
+            </div>
 
-      <main className="container mx-auto p-4 md:p-6">
+            <div className="p-5">
+              <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+                <div className="rounded-2xl border border-[var(--line)] bg-white/75 px-4 py-4 shadow-sm">
+                  <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Products</p>
+                  <p className="mt-2 text-lg font-bold text-stone-900">{products.length}</p>
+                </div>
+                <div className="rounded-2xl border border-[var(--line)] bg-white/75 px-4 py-4 shadow-sm">
+                  <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Orders</p>
+                  <p className="mt-2 text-lg font-bold text-stone-900">{orders.length}</p>
+                </div>
+                <div className="rounded-2xl border border-[var(--line)] bg-white/75 px-4 py-4 shadow-sm">
+                  <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Pending</p>
+                  <p className="mt-2 text-lg font-bold text-stone-900">{orders.filter((order) => order.status === 'pending' || order.status === 'processing').length}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-[var(--line)] px-5 py-5">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">Workspace</p>
+              <nav className="grid gap-2">
+                {adminNavItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = tab === item.id;
+
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => router.push(`/components/dashboard/admin?tab=${item.id}`)}
+                      className={`flex items-center justify-between rounded-[1.25rem] px-4 py-3 text-left text-sm font-semibold transition ${
+                        isActive
+                          ? 'bg-[linear-gradient(120deg,#e55812,#ff8a3c)] text-white shadow-lg shadow-orange-900/15'
+                          : 'bg-white/65 text-stone-700 hover:bg-[var(--surface)] hover:text-stone-900'
+                      }`}
+                    >
+                      <span className="flex items-center gap-3">
+                        <span className={`rounded-xl p-2 ${isActive ? 'bg-white/12' : 'bg-stone-100 text-stone-600'}`}>
+                          <Icon />
+                        </span>
+                        {item.label}
+                      </span>
+                      <span className={`text-xs uppercase tracking-[0.18em] ${isActive ? 'text-orange-50/80' : 'text-stone-400'}`}>
+                        Open
+                      </span>
+                    </button>
+                  );
+                })}
+              </nav>
+            </div>
+
+            <div className="mt-auto border-t border-[var(--line)] p-5">
+              <div className="rounded-[1.5rem] bg-[linear-gradient(160deg,#201611_0%,#3d2414_55%,#7b431d_100%)] p-5 text-white shadow-xl">
+                <p className="text-xs uppercase tracking-[0.18em] text-orange-200">Operations Mode</p>
+                <p className="mt-2 text-lg font-bold">Admin command center</p>
+                <p className="mt-2 text-sm text-orange-100/85">
+                  Switch sections, manage orders, and monitor inventory from a focused workspace.
+                </p>
+                <button
+                  onClick={logout}
+                  className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-stone-900 transition hover:bg-orange-50"
+                >
+                  <FiLogOut /> Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <main className="min-w-0 flex-1 space-y-6">
+          <header className="surface-card overflow-hidden rounded-[2rem]">
+            <div className="border-b border-[var(--line)] bg-[linear-gradient(120deg,#fff8ef_0%,#fffaf4_42%,#f7eddc_100%)] px-6 py-6 sm:px-8">
+              <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.2em] text-stone-500">Admin Workspace</p>
+                  <h2 className="mt-2 text-3xl font-extrabold text-stone-900">
+                    {tab === 'add-product' ? 'Add Product' : tab === 'products' ? 'Product Management' : tab === 'orders' ? 'Order Operations' : 'Analytics Studio'}
+                  </h2>
+                  <p className="mt-3 max-w-3xl text-sm text-stone-600 sm:text-base">
+                    {tab === 'add-product'
+                      ? 'Add new products, upload polished imagery, and prepare listings for the storefront.'
+                      : tab === 'products'
+                        ? 'Edit catalog pricing, stock, and display images from a cleaner control surface.'
+                        : tab === 'orders'
+                          ? 'Review customer orders, update statuses, and manage fulfillment confidently.'
+                          : 'Track the business with premium visuals, KPI panels, and executive reporting.'}
+                  </p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-2xl border border-[var(--line)] bg-white/75 px-4 py-4 shadow-sm">
+                    <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Revenue</p>
+                    <p className="mt-2 text-lg font-bold text-stone-900">Rs {Math.round(totalRevenue).toLocaleString()}</p>
+                  </div>
+                  <div className="rounded-2xl border border-[var(--line)] bg-white/75 px-4 py-4 shadow-sm">
+                    <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Active Orders</p>
+                    <p className="mt-2 text-lg font-bold text-stone-900">{activeOrders.length}</p>
+                  </div>
+                  <div className="rounded-2xl border border-[var(--line)] bg-white/75 px-4 py-4 shadow-sm">
+                    <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Stock Alerts</p>
+                    <p className="mt-2 text-lg font-bold text-stone-900">{lowStockProducts.length + outOfStockProducts.length}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </header>
         {/* Add Product Tab */}
         {tab === 'add-product' && (
-          <div className="bg-white rounded-lg shadow-md p-6 max-w-4xl mx-auto">
-            <h2 className="text-xl font-semibold mb-6 text-gray-600">Add New Product</h2>
+          <div className="surface-card rounded-[2rem] p-6 max-w-5xl mx-auto sm:p-8">
+            <h2 className="text-2xl font-bold mb-6 text-stone-900">Add New Product</h2>
             
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Image Upload */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Product Images</label>
+              <div className="rounded-[1.5rem] border border-[var(--line)] bg-white/70 p-5">
+                <label className="block text-sm font-medium text-stone-700 mb-2">Product Images</label>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <div className="flex-1">
                     <input
@@ -332,7 +585,7 @@ const handleStatus = async (e, orderId) => {
                     type="button"
                     onClick={handleImageUpload}
                     disabled={!file || isUploading}
-                    className={`px-4 py-2 rounded text-white font-medium flex-shrink-0 ${(!file || isUploading) ? 'bg-gray-600 cursor-not-allowed' : 'bg-gray-600 hover:bg-gray-700'}`}
+                    className={`px-4 py-3 rounded-xl text-white text-sm font-semibold flex-shrink-0 ${(!file || isUploading) ? 'bg-stone-400 cursor-not-allowed' : 'brand-button'}`}
                   >
                     {isUploading ? 'Uploading...' : 'Upload Image'}
                   </button>
@@ -361,6 +614,53 @@ const handleStatus = async (e, orderId) => {
                         </button>
                       </div>
                     ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="rounded-[1.5rem] border border-[var(--line)] bg-white/70 p-5">
+                <label className="block text-sm font-medium text-stone-700 mb-2">Edited Display Image</label>
+                <p className="mb-3 text-sm text-stone-500">
+                  Use this for your cleaned or background-edited product image. The customer storefront will show this image first when available.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex-1">
+                    <input
+                      type="file"
+                      onChange={handleDisplayImageFileChange}
+                      accept="image/jpeg, image/png, image/webp"
+                      className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-600 hover:file:bg-gray-200"
+                      disabled={isUploading}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleDisplayImageUpload}
+                    disabled={!displayImageFile || isUploading}
+                    className={`px-4 py-3 rounded-xl text-white text-sm font-semibold flex-shrink-0 ${(!displayImageFile || isUploading) ? 'bg-stone-400 cursor-not-allowed' : 'brand-button'}`}
+                  >
+                    {isUploading ? 'Uploading...' : 'Upload Display Image'}
+                  </button>
+                </div>
+
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Display Image URL</label>
+                  <input
+                    type="text"
+                    value={formData.displayImage}
+                    onChange={(e) => setFormData({ ...formData, displayImage: e.target.value })}
+                    placeholder="Optional cleaned image URL"
+                    className="text-gray-600 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-gray-600 focus:border-gray-600"
+                  />
+                </div>
+
+                {formData.displayImage && (
+                  <div className="mt-4">
+                    <img
+                      src={formData.displayImage}
+                      alt="Edited display preview"
+                      className="h-24 w-24 object-contain rounded-xl border bg-gray-50 p-2"
+                    />
                   </div>
                 )}
               </div>
@@ -447,19 +747,19 @@ const handleStatus = async (e, orderId) => {
                 </div>
 
                 <div>
-                  <label htmlFor="subcategory" className="block text-sm font-medium text-gray-600 mb-1">Subcategory</label>
+                  <label htmlFor="subcategory" className="block text-sm font-medium text-stone-700 mb-1">Subcategory</label>
                   <input
                     type="text"
                     id="subcategory"
                     name="subcategory"
                     value={formData.subcategory}
                     onChange={(e) => setFormData({...formData, subcategory: e.target.value})}
-                    className="text-gray-600 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-gray-600 focus:border-gray-600"
+                    className="text-stone-800 w-full px-4 py-3 border border-[var(--line)] bg-[var(--surface)] rounded-xl"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="stock" className="block text-sm font-medium text-gray-600 mb-1">Stock</label>
+                  <label htmlFor="stock" className="block text-sm font-medium text-stone-700 mb-1">Stock</label>
                   <input
                     type="number"
                     id="stock"
@@ -468,13 +768,13 @@ const handleStatus = async (e, orderId) => {
                     value={formData.stock}
                     onChange={(e) => setFormData({...formData, stock: e.target.value})}
                     required
-                    className="text-gray-600 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-gray-600 focus:border-gray-600"
+                    className="text-stone-800 w-full px-4 py-3 border border-[var(--line)] bg-[var(--surface)] rounded-xl"
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-600 mb-1">Description</label>
+                <label htmlFor="description" className="block text-sm font-medium text-stone-700 mb-1">Description</label>
                 <textarea
                   id="description"
                   name="description"
@@ -482,14 +782,14 @@ const handleStatus = async (e, orderId) => {
                   value={formData.description}
                   onChange={(e) => setFormData({...formData, description: e.target.value})}
                   required
-                  className="text-gray-600 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-gray-600 focus:border-gray-600"
+                  className="text-stone-800 w-full px-4 py-3 border border-[var(--line)] bg-[var(--surface)] rounded-xl"
                 />
               </div>
 
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-slate-600 text-white font-medium rounded-md shadow-sm hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-600"
+                  className="brand-button px-6 py-3 text-sm font-semibold rounded-xl shadow-lg shadow-orange-900/15"
                 >
                   Add Product
                 </button>
@@ -500,10 +800,10 @@ const handleStatus = async (e, orderId) => {
 
  {/* Products Tab */}
 {tab === 'products' && (
-  <div className="bg-white rounded-lg shadow-md p-6">
+  <div className="surface-card rounded-[2rem] p-6 sm:p-8">
     {/* Header and Controls */}
     <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
-      <h2 className="text-xl font-semibold text-gray-600">Product Listing</h2>
+      <h2 className="text-2xl font-bold text-stone-900">Product Listing</h2>
 
       <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
         {/* Search Bar */}
@@ -516,7 +816,7 @@ const handleStatus = async (e, orderId) => {
             placeholder="Search products..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="text-gray-600 pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-gray-600 focus:border-gray-600"
+            className="text-stone-800 pl-10 w-full px-4 py-3 border border-[var(--line)] bg-[var(--surface)] rounded-xl"
           />
         </div>
 
@@ -524,7 +824,7 @@ const handleStatus = async (e, orderId) => {
         <select
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
-          className="px-3 py-2 text-gray-600 border border-gray-300 rounded-md focus:outline-none focus:ring-gray-600 focus:border-gray-600"
+          className="px-4 py-3 text-stone-800 border border-[var(--line)] bg-[var(--surface)] rounded-xl"
         >
           {categories.map((category) => (
             <option key={category} value={category}>
@@ -539,7 +839,7 @@ const handleStatus = async (e, orderId) => {
     {Object.keys(productsByCategory).length > 0 ? (
       Object.entries(productsByCategory).map(([category, categoryProducts]) => (
         <div key={category} className="mb-8">
-          <h3 className="text-lg font-semibold text-gray-600 mb-4 pb-2 border-b">
+          <h3 className="text-lg font-semibold text-stone-800 mb-4 pb-2 border-b border-[var(--line)]">
             {category}
           </h3>
 
@@ -550,25 +850,25 @@ const handleStatus = async (e, orderId) => {
               return (
                 <div
                   key={product._id}
-                  className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-gradient-to-r from-gray-500 via-gray-600 to-gray-600"
+                  className="surface-card rounded-[1.5rem] p-5"
                 >
                   {/* Image */}
-                  {product.images?.[0] && (
-                    <div className="bg-white/5 rounded-xl overflow-hidden mb-4 flex items-center justify-center h-48">
+                  {(product.displayImage || product.images?.[0]) && (
+                    <div className="rounded-[1.25rem] overflow-hidden mb-4 flex items-center justify-center h-48 border border-[var(--line)] bg-[radial-gradient(circle_at_top,#fff8ef_0%,#f5ecdf_52%,#eadcc5_100%)]">
                       <img
-                        src={product.images[0]}
+                        src={product.displayImage || product.images[0]}
                         alt={product.name}
-                        className="w-full h-full object-contain p-4"
+                        className="w-full h-full object-contain p-4 drop-shadow-[0_16px_22px_rgba(24,22,19,0.18)]"
                       />
                     </div>
                   )}
 
-                  <h4 className="font-medium text-white line-clamp-1">
+                  <h4 className="font-medium text-stone-900 line-clamp-2">
                     {product.name}
                   </h4>
 
                   {/* Price */}
-                  <label className="block text-white text-sm mt-2">
+                  <label className="block text-stone-700 text-sm mt-3">
                     Price (Rs)
                     <input
                       type="number"
@@ -578,12 +878,12 @@ const handleStatus = async (e, orderId) => {
                       onChange={(e) =>
                         handleEditChange(product._id, 'price', e.target.value)
                       }
-                      className="text-white mt-1 w-full border border-gray-300 rounded px-2 py-1 text-sm"
+                      className="text-stone-800 mt-1 w-full border border-[var(--line)] bg-[var(--surface)] rounded-xl px-3 py-2 text-sm"
                     />
                   </label>
 
                   {/* Stock */}
-                  <label className="block text-white text-sm mt-2">
+                  <label className="block text-stone-700 text-sm mt-3">
                     Stock
                     <input
                       type="number"
@@ -592,7 +892,20 @@ const handleStatus = async (e, orderId) => {
                       onChange={(e) =>
                         handleEditChange(product._id, 'stock', e.target.value)
                       }
-                      className="text-white mt-1 w-full border border-gray-300 rounded px-2 py-1 text-sm"
+                      className="text-stone-800 mt-1 w-full border border-[var(--line)] bg-[var(--surface)] rounded-xl px-3 py-2 text-sm"
+                    />
+                  </label>
+
+                  <label className="block text-stone-700 text-sm mt-3">
+                    Edited Image URL
+                    <input
+                      type="text"
+                      value={edited.displayImage ?? product.displayImage ?? ""}
+                      onChange={(e) =>
+                        handleEditChange(product._id, 'displayImage', e.target.value)
+                      }
+                      placeholder="Optional cleaned image URL"
+                      className="text-stone-800 mt-1 w-full border border-[var(--line)] bg-[var(--surface)] rounded-xl px-3 py-2 text-sm"
                     />
                   </label>
 
@@ -600,8 +913,8 @@ const handleStatus = async (e, orderId) => {
                   <span
                     className={`text-xs mt-1 ${
                       (edited.stock ?? product.stock) > 0
-                        ? 'text-white'
-                        : 'text-white-600'
+                        ? 'text-emerald-700'
+                        : 'text-red-700'
                     }`}
                   >
                     {(edited.stock ?? product.stock) > 0
@@ -614,9 +927,13 @@ const handleStatus = async (e, orderId) => {
                     <button
                       onClick={() => handleSaveEdit(product._id)}
                       disabled={!edits[product._id]}
-                      className="flex items-center px-3 py-1 text-sm text-white-900 hover:text-white"
+                      className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${
+                        edits[product._id]
+                          ? 'brand-button shadow-lg shadow-orange-900/15'
+                          : 'cursor-not-allowed bg-stone-300 text-stone-500'
+                      }`}
                     >
-                      ✏️Edit
+                      Save Changes
                     </button>
                   </div>
                 </div>
@@ -626,7 +943,7 @@ const handleStatus = async (e, orderId) => {
         </div>
       ))
     ) : (
-      <div className="text-center py-12">
+      <div className="text-center py-16 rounded-[1.5rem] border border-dashed border-[var(--line)] bg-[var(--surface)]">
         <div className="mx-auto h-24 w-24 text-gray-400">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -642,10 +959,10 @@ const handleStatus = async (e, orderId) => {
             />
           </svg>
         </div>
-        <h3 className="mt-4 text-lg font-medium text-gray-600">
+        <h3 className="mt-4 text-lg font-medium text-stone-900">
           No products found
         </h3>
-        <p className="mt-2 text-gray-500">
+        <p className="mt-2 text-stone-600">
           {searchTerm || selectedCategory !== 'All'
             ? 'Try adjusting your search or filter'
             : 'Add your first product to get started'}
@@ -655,7 +972,7 @@ const handleStatus = async (e, orderId) => {
             onClick={() =>
               router.push('/components/dashboard/admin?tab=add-product')
             }
-            className="mt-4 px-4 py-2 bg-slate-600 text-white rounded-md hover:bg-slate-700"
+            className="mt-4 brand-button px-5 py-3 text-sm font-semibold rounded-xl shadow-lg shadow-orange-900/15"
           >
             Add Product
           </button>
@@ -667,35 +984,449 @@ const handleStatus = async (e, orderId) => {
 
         {/* Analytics Tab */}
         {tab === 'analytics' && (
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-600">Analytics</h2>
-            <div className="w-full overflow-hidden">
-              <iframe
-                title="xp"
-                src="https://app.powerbi.com/reportEmbed?reportId=fbaeecf2-8bb6-4cb2-824e-c1412b5752c7&autoAuth=true&ctid=1511ab2e-502b-4e2d-bd68-f679f549b5a2"
-                width="100%"
-                height="700"
-                frameBorder="0"
-                allowFullScreen
-                className="w-full border-0 rounded-md"
-              ></iframe>
+          <div className="surface-card rounded-[2rem] p-6 sm:p-8">
+            <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Performance</p>
+                <h2 className="text-2xl font-bold text-stone-900">Analytics Studio</h2>
+                <p className="mt-2 max-w-2xl text-sm text-stone-600">Review the latest business signals, order flow, and catalog performance from one premium admin-only analytics surface.</p>
+              </div>
+              <div className="flex flex-wrap gap-2 rounded-full border border-[var(--line)] bg-white/80 p-2 shadow-sm">
+                <button
+                  type="button"
+                  onClick={() => setAnalyticsView('studio')}
+                  className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                    analyticsView === 'studio'
+                      ? 'brand-button shadow-lg shadow-orange-900/15'
+                      : 'text-stone-700 hover:bg-[var(--surface)]'
+                  }`}
+                >
+                  Studio View
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAnalyticsView('powerbi')}
+                  className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                    analyticsView === 'powerbi'
+                      ? 'brand-button shadow-lg shadow-orange-900/15'
+                      : 'text-stone-700 hover:bg-[var(--surface)]'
+                  }`}
+                >
+                  Power BI
+                </button>
+              </div>
             </div>
+
+            {analyticsView === 'studio' ? (
+              <div className="space-y-6">
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                  <div className="relative overflow-hidden rounded-[1.75rem] border border-orange-200 bg-[linear-gradient(135deg,#2a180d_0%,#5a2a12_48%,#e55812_100%)] p-5 text-white shadow-[0_24px_60px_rgba(111,47,14,0.28)]">
+                    <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-white/10 blur-2xl" />
+                    <div className="relative flex items-start justify-between">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.18em] text-orange-100/80">Revenue</p>
+                        <p className="mt-3 text-3xl font-extrabold">Rs {Math.round(totalRevenue).toLocaleString()}</p>
+                        <p className="mt-2 text-sm text-orange-100/85">Delivered-order revenue collected to date.</p>
+                      </div>
+                      <span className="rounded-2xl bg-white/12 p-3 text-xl"><FiTrendingUp /></span>
+                    </div>
+                  </div>
+
+                  <div className="rounded-[1.75rem] border border-[var(--line)] bg-white/80 p-5 shadow-sm">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Order Velocity</p>
+                        <p className="mt-3 text-3xl font-extrabold text-stone-900">{orders.length}</p>
+                        <p className="mt-2 text-sm text-stone-600">{activeOrders.length} active orders currently in flow.</p>
+                      </div>
+                      <span className="rounded-2xl bg-amber-100 p-3 text-xl text-amber-700"><FiActivity /></span>
+                    </div>
+                  </div>
+
+                  <div className="rounded-[1.75rem] border border-[var(--line)] bg-white/80 p-5 shadow-sm">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Average Order</p>
+                        <p className="mt-3 text-3xl font-extrabold text-stone-900">Rs {Math.round(averageOrderValue).toLocaleString()}</p>
+                        <p className="mt-2 text-sm text-stone-600">{completedOrders.length} fulfilled orders powering this view.</p>
+                      </div>
+                      <span className="rounded-2xl bg-emerald-100 p-3 text-xl text-emerald-700"><FiBarChart2 /></span>
+                    </div>
+                  </div>
+
+                  <div className="rounded-[1.75rem] border border-[var(--line)] bg-white/80 p-5 shadow-sm">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Inventory Watch</p>
+                        <p className="mt-3 text-3xl font-extrabold text-stone-900">{lowStockProducts.length + outOfStockProducts.length}</p>
+                        <p className="mt-2 text-sm text-stone-600">{outOfStockProducts.length} out of stock, {lowStockProducts.length} running low.</p>
+                      </div>
+                      <span className="rounded-2xl bg-rose-100 p-3 text-xl text-rose-700"><FiAlertCircle /></span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid gap-6 xl:grid-cols-[1.5fr_0.9fr]">
+                  <div className="rounded-[1.75rem] border border-[var(--line)] bg-white/82 p-5 shadow-sm">
+                    <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Revenue Trend</p>
+                        <h3 className="mt-2 text-xl font-bold text-stone-900">Six-month performance arc</h3>
+                      </div>
+                      <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] px-4 py-3 text-sm text-stone-600">
+                        Store units in stock: <span className="font-semibold text-stone-900">{totalUnitsInStock}</span>
+                      </div>
+                    </div>
+                    <div className="rounded-[1.5rem] border border-[var(--line)] bg-[radial-gradient(circle_at_top_left,rgba(255,138,60,0.18),transparent_35%),linear-gradient(180deg,#fffdf9_0%,#fff5ea_100%)] p-4">
+                      <svg viewBox="0 0 320 140" className="h-56 w-full">
+                        <defs>
+                          <linearGradient id="revenueFill" x1="0" x2="0" y1="0" y2="1">
+                            <stop offset="0%" stopColor="#ff8a3c" stopOpacity="0.35" />
+                            <stop offset="100%" stopColor="#ff8a3c" stopOpacity="0.03" />
+                          </linearGradient>
+                          <linearGradient id="revenueLine" x1="0" x2="1" y1="0" y2="0">
+                            <stop offset="0%" stopColor="#f97316" />
+                            <stop offset="100%" stopColor="#7c2d12" />
+                          </linearGradient>
+                        </defs>
+                        {[0, 1, 2, 3].map((index) => (
+                          <line
+                            key={index}
+                            x1="0"
+                            y1={20 + index * 28}
+                            x2="320"
+                            y2={20 + index * 28}
+                            stroke="rgba(95, 86, 76, 0.12)"
+                            strokeDasharray="4 6"
+                          />
+                        ))}
+                        <path d={revenueFillPath} fill="url(#revenueFill)" />
+                        <path d={revenueAreaPath} fill="none" stroke="url(#revenueLine)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+                        {revenueTrend.map((item, index) => {
+                          const x = revenueTrend.length === 1 ? 320 : (index / (revenueTrend.length - 1)) * 320;
+                          const y = 120 - (item.revenue / maxRevenue) * 88;
+                          return (
+                            <g key={item.label}>
+                              <circle cx={x} cy={y} r="5.5" fill="#fff7ed" stroke="#ea580c" strokeWidth="3" />
+                              <text x={x} y="136" textAnchor="middle" className="fill-stone-500 text-[9px] font-semibold tracking-[0.18em] uppercase">
+                                {item.label}
+                              </text>
+                            </g>
+                          );
+                        })}
+                      </svg>
+                    </div>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                      {revenueTrend.slice(-3).map((item) => (
+                        <div key={item.label} className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] px-4 py-3">
+                          <p className="text-xs uppercase tracking-[0.18em] text-stone-500">{item.label}</p>
+                          <p className="mt-2 text-lg font-bold text-stone-900">Rs {Math.round(item.revenue).toLocaleString()}</p>
+                          <p className="text-sm text-stone-600">{item.orders} delivered orders</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[1.75rem] border border-[var(--line)] bg-white/82 p-5 shadow-sm">
+                    <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Fulfillment Mix</p>
+                    <h3 className="mt-2 text-xl font-bold text-stone-900">Order health snapshot</h3>
+                    <div className="mt-6 flex items-center justify-center">
+                      <div
+                        className="grid h-52 w-52 place-items-center rounded-full"
+                        style={{
+                          background: `conic-gradient(${fulfillmentMix[0].color} 0deg ${(fulfillmentMix[0].value / fulfillmentTotal) * 360}deg, ${fulfillmentMix[1].color} ${(fulfillmentMix[0].value / fulfillmentTotal) * 360}deg ${((fulfillmentMix[0].value + fulfillmentMix[1].value) / fulfillmentTotal) * 360}deg, ${fulfillmentMix[2].color} ${((fulfillmentMix[0].value + fulfillmentMix[1].value) / fulfillmentTotal) * 360}deg 360deg)`,
+                        }}
+                      >
+                        <div className="grid h-32 w-32 place-items-center rounded-full bg-white text-center shadow-inner">
+                          <div>
+                            <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Orders</p>
+                            <p className="mt-2 text-3xl font-extrabold text-stone-900">{orders.length}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-6 space-y-3">
+                      {fulfillmentMix.map((item) => (
+                        <div key={item.label} className="flex items-center justify-between rounded-2xl border border-[var(--line)] bg-[var(--surface)] px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <span className="h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} />
+                            <span className="font-medium text-stone-800">{item.label}</span>
+                          </div>
+                          <span className="text-sm font-semibold text-stone-600">{item.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+                  <div className="rounded-[1.75rem] border border-[var(--line)] bg-white/82 p-5 shadow-sm">
+                    <div className="mb-5 flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Demand Rhythm</p>
+                        <h3 className="mt-2 text-xl font-bold text-stone-900">Weekly order pulse</h3>
+                      </div>
+                      <span className="rounded-full border border-[var(--line)] bg-[var(--surface)] px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
+                        Last all-time pattern
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-7 gap-3">
+                      {weekdayDemand.map((day) => (
+                        <div key={day.label} className="rounded-[1.25rem] border border-[var(--line)] bg-[var(--surface)] p-3 text-center">
+                          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-stone-500">{day.label}</p>
+                          <div className="mt-4 flex h-28 items-end justify-center">
+                            <div
+                              className="w-8 rounded-full bg-[linear-gradient(180deg,#ffb37a_0%,#e55812_100%)] shadow-[0_10px_22px_rgba(229,88,18,0.18)]"
+                              style={{ height: `${Math.max((day.orders / maxWeekdayOrders) * 100, day.orders ? 18 : 8)}%` }}
+                            />
+                          </div>
+                          <p className="mt-4 text-lg font-bold text-stone-900">{day.orders}</p>
+                          <p className="text-xs text-stone-500">Rs {Math.round(day.revenue).toLocaleString()}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[1.75rem] border border-[var(--line)] bg-[linear-gradient(135deg,#2a180d_0%,#4b2816_55%,#6c3416_100%)] p-5 text-white shadow-[0_24px_60px_rgba(59,26,9,0.24)]">
+                    <p className="text-xs uppercase tracking-[0.18em] text-orange-100/75">Operational Pulse</p>
+                    <h3 className="mt-2 text-xl font-bold">Live store health</h3>
+                    <div className="mt-6 space-y-5">
+                      <div>
+                        <div className="mb-2 flex items-center justify-between text-sm">
+                          <span className="text-orange-100/80">Fulfillment rate</span>
+                          <span className="font-semibold">{fulfillmentRate}%</span>
+                        </div>
+                        <div className="h-3 overflow-hidden rounded-full bg-white/10">
+                          <div className="h-full rounded-full bg-[linear-gradient(120deg,#34d399,#10b981)]" style={{ width: `${Math.max(fulfillmentRate, 6)}%` }} />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="mb-2 flex items-center justify-between text-sm">
+                          <span className="text-orange-100/80">Cancellation rate</span>
+                          <span className="font-semibold">{cancellationRate}%</span>
+                        </div>
+                        <div className="h-3 overflow-hidden rounded-full bg-white/10">
+                          <div className="h-full rounded-full bg-[linear-gradient(120deg,#fb7185,#e11d48)]" style={{ width: `${Math.max(cancellationRate, 6)}%` }} />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="mb-2 flex items-center justify-between text-sm">
+                          <span className="text-orange-100/80">Sell-through signal</span>
+                          <span className="font-semibold">{sellThroughSignal}%</span>
+                        </div>
+                        <div className="h-3 overflow-hidden rounded-full bg-white/10">
+                          <div className="h-full rounded-full bg-[linear-gradient(120deg,#fdba74,#f97316)]" style={{ width: `${Math.max(Math.min(sellThroughSignal, 100), 6)}%` }} />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-6 grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+                      <div className="rounded-2xl bg-white/10 px-4 py-3">
+                        <p className="text-xs uppercase tracking-[0.18em] text-orange-100/70">Completed</p>
+                        <p className="mt-2 text-2xl font-bold">{completedOrders.length}</p>
+                      </div>
+                      <div className="rounded-2xl bg-white/10 px-4 py-3">
+                        <p className="text-xs uppercase tracking-[0.18em] text-orange-100/70">Attention Needed</p>
+                        <p className="mt-2 text-2xl font-bold">{lowStockProducts.length + outOfStockProducts.length}</p>
+                      </div>
+                      <div className="rounded-2xl bg-white/10 px-4 py-3">
+                        <p className="text-xs uppercase tracking-[0.18em] text-orange-100/70">Catalog Depth</p>
+                        <p className="mt-2 text-2xl font-bold">{products.length}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+                  <div className="space-y-6">
+                    <div className="rounded-[1.75rem] border border-[var(--line)] bg-white/82 p-5 shadow-sm">
+                      <div className="mb-5 flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Category Sales</p>
+                          <h3 className="mt-2 text-xl font-bold text-stone-900">Top-performing categories</h3>
+                        </div>
+                        <span className="rounded-full border border-[var(--line)] bg-[var(--surface)] px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
+                          {categorySales.length} tracked
+                        </span>
+                      </div>
+                      <div className="space-y-4">
+                        {categorySales.length > 0 ? categorySales.map((item) => (
+                          <div key={item.category}>
+                            <div className="mb-2 flex items-center justify-between gap-4">
+                              <p className="font-medium text-stone-800">{item.category}</p>
+                              <p className="text-sm font-semibold text-stone-600">Rs {Math.round(item.revenue).toLocaleString()}</p>
+                            </div>
+                            <div className="h-3 overflow-hidden rounded-full bg-stone-100">
+                              <div
+                                className="h-full rounded-full bg-[linear-gradient(120deg,#f97316,#7c2d12)]"
+                                style={{ width: `${Math.max((item.revenue / categoryTotal) * 100, 10)}%` }}
+                              />
+                            </div>
+                          </div>
+                        )) : (
+                          <div className="rounded-[1.5rem] border border-dashed border-[var(--line)] bg-[var(--surface)] px-5 py-10 text-center text-stone-600">
+                            Category sales will appear here once orders start flowing through the store.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="rounded-[1.75rem] border border-[var(--line)] bg-white/82 p-5 shadow-sm">
+                      <div className="mb-5 flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Inventory Depth</p>
+                          <h3 className="mt-2 text-xl font-bold text-stone-900">Units by category</h3>
+                        </div>
+                        <span className="rounded-2xl bg-sky-100 p-3 text-xl text-sky-700"><FiPackage /></span>
+                      </div>
+                      <div className="space-y-4">
+                        {inventoryByCategory.length > 0 ? inventoryByCategory.map((item) => (
+                          <div key={item.category} className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] px-4 py-4">
+                            <div className="flex items-center justify-between gap-4">
+                              <div>
+                                <p className="font-medium text-stone-900">{item.category}</p>
+                                <p className="text-sm text-stone-600">{item.products} products, {item.lowStock} low-stock alerts</p>
+                              </div>
+                              <p className="text-sm font-semibold text-stone-700">{item.units} units</p>
+                            </div>
+                            <div className="mt-3 h-3 overflow-hidden rounded-full bg-stone-100">
+                              <div
+                                className="h-full rounded-full bg-[linear-gradient(120deg,#38bdf8,#2563eb)]"
+                                style={{ width: `${Math.max((item.units / maxInventoryUnits) * 100, 10)}%` }}
+                              />
+                            </div>
+                          </div>
+                        )) : (
+                          <div className="rounded-[1.5rem] border border-dashed border-[var(--line)] bg-[var(--surface)] px-5 py-10 text-center text-stone-600">
+                            Inventory category depth will appear once products are loaded.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-6">
+                    <div className="rounded-[1.75rem] border border-[var(--line)] bg-white/82 p-5 shadow-sm">
+                      <div className="mb-5 flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Top Products</p>
+                          <h3 className="mt-2 text-xl font-bold text-stone-900">Revenue leaders</h3>
+                        </div>
+                        <span className="rounded-2xl bg-orange-100 p-3 text-xl text-orange-700"><FiPackage /></span>
+                      </div>
+                      <div className="space-y-3">
+                        {topProducts.length > 0 ? topProducts.map((product, index) => (
+                          <div key={product.id} className="flex items-center justify-between rounded-2xl border border-[var(--line)] bg-[var(--surface)] px-4 py-3">
+                            <div>
+                              <p className="text-xs uppercase tracking-[0.18em] text-stone-500">#{index + 1}</p>
+                              <p className="mt-1 font-medium text-stone-900">{product.name}</p>
+                              <p className="text-sm text-stone-600">{product.units} units sold</p>
+                            </div>
+                            <p className="text-sm font-semibold text-stone-700">Rs {Math.round(product.revenue).toLocaleString()}</p>
+                          </div>
+                        )) : (
+                          <div className="rounded-[1.5rem] border border-dashed border-[var(--line)] bg-[var(--surface)] px-5 py-10 text-center text-stone-600">
+                            Best sellers will show here once your first orders are completed.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="rounded-[1.75rem] border border-[var(--line)] bg-[linear-gradient(135deg,#fff8ef_0%,#fff2e0_100%)] p-5 shadow-sm">
+                      <div className="mb-5 flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Recent Flow</p>
+                          <h3 className="mt-2 text-xl font-bold text-stone-900">Latest orders</h3>
+                        </div>
+                        <span className="rounded-2xl bg-white/80 p-3 text-xl text-stone-700 shadow-sm"><FiClock /></span>
+                      </div>
+                      <div className="space-y-3">
+                        {recentOrders.length > 0 ? recentOrders.map((order) => (
+                          <div key={order.orderId} className="rounded-2xl border border-white/80 bg-white/75 px-4 py-3 shadow-sm">
+                            <div className="flex items-start justify-between gap-4">
+                              <div>
+                                <p className="font-medium text-stone-900">#{order.orderId}</p>
+                                <p className="text-sm text-stone-600">{order.user?.name || 'Guest customer'}</p>
+                              </div>
+                              <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold capitalize text-stone-700">
+                                {order.status}
+                              </span>
+                            </div>
+                            <div className="mt-3 flex items-center justify-between text-sm text-stone-600">
+                              <span>{new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                              <span className="font-semibold text-stone-900">Rs {Math.round(order.totalAmount || 0).toLocaleString()}</span>
+                            </div>
+                          </div>
+                        )) : (
+                          <div className="rounded-[1.5rem] border border-dashed border-[var(--line)] bg-white/75 px-5 py-10 text-center text-stone-600">
+                            No order activity yet. Once customers purchase, this panel will populate automatically.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div className="rounded-2xl border border-[var(--line)] bg-white/75 px-4 py-4 shadow-sm">
+                    <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Embedded Report</p>
+                    <p className="mt-2 text-lg font-bold text-stone-900">Live Power BI</p>
+                  </div>
+                  <div className="rounded-2xl border border-[var(--line)] bg-white/75 px-4 py-4 shadow-sm">
+                    <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Admin Access</p>
+                    <p className="mt-2 text-lg font-bold text-stone-900">Restricted</p>
+                  </div>
+                  <div className="rounded-2xl border border-[var(--line)] bg-white/75 px-4 py-4 shadow-sm">
+                    <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Best Use</p>
+                    <p className="mt-2 text-lg font-bold text-stone-900">Executive reporting</p>
+                  </div>
+                </div>
+                <div className="w-full overflow-hidden rounded-[1.5rem] border border-[var(--line)] bg-white shadow-sm">
+                  <iframe
+                    title="xp"
+                    src="https://app.powerbi.com/reportEmbed?reportId=fbaeecf2-8bb6-4cb2-824e-c1412b5752c7&autoAuth=true&ctid=1511ab2e-502b-4e2d-bd68-f679f549b5a2"
+                    width="100%"
+                    height="760"
+                    frameBorder="0"
+                    allowFullScreen
+                    className="w-full border-0"
+                  ></iframe>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
         {/* Orders Tab */}
         {tab === 'orders' && (
-          <div className="bg-gray-600 rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-6 text-white">Orders</h2>
+          <div className="surface-card rounded-[2rem] p-6 sm:p-8">
+            <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Fulfillment</p>
+                <h2 className="text-2xl font-bold text-stone-900">Orders</h2>
+                <p className="mt-2 text-sm text-stone-600">Track customer orders, update statuses, and review delivery details in one place.</p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-2xl border border-[var(--line)] bg-white/75 px-4 py-4 shadow-sm">
+                  <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Total Orders</p>
+                  <p className="mt-2 text-lg font-bold text-stone-900">{orders.length}</p>
+                </div>
+                <div className="rounded-2xl border border-[var(--line)] bg-white/75 px-4 py-4 shadow-sm">
+                  <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Active</p>
+                  <p className="mt-2 text-lg font-bold text-stone-900">{orders.filter((order) => ['pending', 'processing', 'shipped'].includes(order.status)).length}</p>
+                </div>
+              </div>
+            </div>
             
             <div className="space-y-4">
               {orders.length > 0 ? (
                 orders.map((order) => (
-                  <div key={order.orderId} className="border rounded-lg p-6 hover:shadow-md transition-shadow bg-gray-500">
+                  <div key={order.orderId} className="surface-card rounded-[1.5rem] p-6">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 ">
                       <div>
-                        <h3 className="font-semibold text-lg text-white">Order #{order.orderId}</h3>
-                        <p className="text-white-600 text-sm">
+                        <h3 className="font-semibold text-lg text-stone-900">Order #{order.orderId}</h3>
+                        <p className="text-stone-500 text-sm">
                           {new Date(order.createdAt).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'short',
@@ -705,46 +1436,40 @@ const handleStatus = async (e, orderId) => {
                           })}
                         </p>
                       </div>
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium self-start sm:self-auto ${
-                        order.status === 'completed' ? 'bg-green-100 text-green-800' :
-                        order.status === 'processing' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-slate-600 text-white-800'
-                      }`}>
-          <div className="px-3 py-1 rounded-full text-sm font-medium self-start sm:self-auto">
-      <select
-        id="status"
-        value={selectedOption[order.orderId] || "pending"}
-        onChange={(e)=>handleStatus(e,order.orderId)}
-        className={`
-          px-2 py-1 rounded 
-          ${selectedOption[order.orderId] === "delivered" ? "bg-green-100 text-green-800" :
-            selectedOption[order.orderId] === "processing" ? "bg-yellow-100 text-yellow-800" :
-            selectedOption[order.orderId] === "pending" ? "bg-slate-600 text-white-800" :
-            selectedOption[order.orderId] === "cancelled" ? "bg-red-100 text-red-800" :
-            "bg-gray-100 text-gray-800"}
-        `}
-      >
-        {options.map((status) => (
-          <option key={status} value={status}>
-            {status}
-          </option>
-        ))}
-      </select>
-    </div>
-                       
-                      </span>
+                      <div className="min-w-[180px] rounded-[1.25rem] border border-[var(--line)] bg-white/85 px-4 py-3 shadow-sm">
+                        <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-stone-500">Status</p>
+                        <select
+                          id="status"
+                          value={selectedOption[order.orderId] || "pending"}
+                          onChange={(e)=>handleStatus(e,order.orderId)}
+                          className={`
+                            w-full rounded-xl border border-transparent px-4 py-2.5 text-sm font-semibold capitalize outline-none transition-colors
+                            ${selectedOption[order.orderId] === "delivered" ? "bg-emerald-100 text-emerald-800" :
+                              selectedOption[order.orderId] === "processing" ? "bg-amber-100 text-amber-800" :
+                              selectedOption[order.orderId] === "pending" ? "bg-stone-100 text-stone-700" :
+                              selectedOption[order.orderId] === "cancelled" ? "bg-rose-100 text-rose-800" :
+                              "bg-sky-100 text-sky-800"}
+                          `}
+                        >
+                          {options.map((status) => (
+                            <option key={status} value={status}>
+                              {status}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                      <div className='text-white'>
-                        <h4 className="font-medium text-white mb-2">Customer Info</h4>
+                      <div className='rounded-[1.25rem] border border-[var(--line)] bg-white/70 p-4 text-stone-700'>
+                        <h4 className="font-medium text-stone-900 mb-2">Customer Info</h4>
                         <p>{order.user?.name || 'N/A'}</p>
                         <p>{order.user?.number || 'N/A'}</p>
-                        <p className="text-white">{order.user?.email || 'N/A'}</p>
+                        <p>{order.user?.email || 'N/A'}</p>
                       </div>
 
-                      <div className='text-white'>
-                        <h4 className="font-medium text-white mb-2">Delivery Info</h4>
+                      <div className='rounded-[1.25rem] border border-[var(--line)] bg-white/70 p-4 text-stone-700'>
+                        <h4 className="font-medium text-stone-900 mb-2">Delivery Info</h4>
                         <p>{order.shippingAddress?.street || 'N/A'}</p>
                         <p>{order.shippingAddress?.city || 'N/A'}</p>
                         <p>{order.shippingAddress?.state || 'N/A'}</p>
@@ -754,10 +1479,10 @@ const handleStatus = async (e, orderId) => {
                     </div>
 
                     <div className="mb-4">
-                      <h4 className="font-medium text-white mb-2">Ordered Products</h4>
+                      <h4 className="font-medium text-stone-900 mb-2">Ordered Products</h4>
                       <ul className="space-y-2">
                         {order.items?.map((item, index) => (
-                          <li key={item.productId} className="flex justify-between text-white">
+                          <li key={item.productId} className="flex justify-between rounded-xl bg-[var(--surface)] px-4 py-3 text-stone-700">
                             <span>{item.quantity}x {item.productName || 'Unknown Product'}</span>
                             <span>Rs {(item.quantity * item.price).toFixed(2)}</span>
                           </li>
@@ -766,7 +1491,7 @@ const handleStatus = async (e, orderId) => {
                     </div>
 
                     <div className="pt-4 border-t">
-                      <div className="flex justify-between font-medium text-white">
+                      <div className="flex justify-between font-medium text-stone-900">
                         <span>Total</span>
                         <span>Rs {order.totalAmount?.toFixed(2) || '0.00'}</span>
                       </div>
@@ -774,27 +1499,33 @@ const handleStatus = async (e, orderId) => {
                   </div>
                 ))
               ) : (
-                <div key="no user found" className="text-center py-12">
+                <div key="no user found" className="text-center py-16 rounded-[1.5rem] border border-dashed border-[var(--line)] bg-[var(--surface)]">
                   <div className="mx-auto h-24 w-24 text-gray-400">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                   </div>
-                  <h3 className="mt-4 text-lg font-medium text-white">No orders yet</h3>
-                  <p className="mt-2 text-white">Orders will appear here when customers make purchases</p>
+                  <h3 className="mt-4 text-lg font-medium text-stone-900">No orders yet</h3>
+                  <p className="mt-2 text-stone-600">Orders will appear here when customers make purchases</p>
                 </div>
               )}
             </div>
           </div>
         )}
-      </main>
-
-      {/* Footer */}
-      <footer className="bg-gray-800 text-white p-4 mt-8">
-        <div className="container mx-auto text-center">
-          <p>© {new Date().getFullYear()} XP Computer Admin Dashboard</p>
-        </div>
-      </footer>
+          {/* Footer */}
+          <footer className="mt-8">
+            <div className="surface-card flex flex-col gap-2 rounded-[1.75rem] px-6 py-6 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
+              <div>
+                <p className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-stone-500">Admin Console</p>
+                <p className="mt-1 text-sm text-stone-600">&copy; {new Date().getFullYear()} The Accesories Emporium. Manage products, orders, and storefront performance.</p>
+              </div>
+              <div className="rounded-full border border-[var(--line)] bg-white/75 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
+                Operations Dashboard
+              </div>
+            </div>
+          </footer>
+        </main>
+      </div>
     </div>
 
   );

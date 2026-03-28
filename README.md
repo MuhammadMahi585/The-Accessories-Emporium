@@ -1,139 +1,180 @@
-# XP Computer Web Application
+# The Accesories Emporium
 
-Welcome to the **XP Computer** Next.js project! This repository contains a fully functional web application with:
+A modern Next.js ecommerce application for computer accessories, customer shopping, and admin operations.
 
-- 🔒 Role‑based authentication (Admin & Customer)
-- 🎨 Responsive, Tailwind‑CSS UI
-- 📊 Informational sections (Owner, Team, Branches, Why Join Us, Testimonials)
-- 📱 Sticky side panels and clean layouts
-- 📁 Easy image management via the `public/assets/images` folder
+This project includes:
 
----
-### You can visit website by clicking on link below
-https://xpcomputers.shop
+- Role-based authentication for `admin` and `customer`
+- Premium storefront UI with refreshed dashboards and account pages
+- Product catalog, cart, checkout flow, and order history
+- Admin product management, order control, and analytics studio
+- MongoDB-powered data layer with JWT-based authentication
+- Power BI support for embedded analytics reporting
 
-## Table of Contents
+## Live Website
 
-1. [Demo](#demo)
-2. [Features](#features)
-3. [Tech Stack](#tech-stack)
-4. [Getting Started](#getting-started)
+`https://xpcomputers.shop`
 
----
+## UI Preview
 
-## Demo
+These screenshots are included from the repository asset folder.
 
 ### Authentication
 
-#### Login Page
+#### Login
 ![Login Page](./assets/login.png)
 
-#### SignUp Page
-![SignUp Page](./assets/signup.png)
+#### Signup
+![Signup Page](./assets/signup.png)
 
-### Power BI Analytics
+### Customer Experience
 
-#### Products Analytics Pages
-![Products Analytics Page](./assets/Analytics.png)
+#### Customer Home
+![Customer Home](./assets/HomePageCustomer.png)
 
-#### Sales Analytics Pages
-![Sales Analytics Page](./assets/ProductSoldAnalytics.png)
+#### Product View
+![Product View](./assets/productViewPage.png)
 
-#### Users Analytics Pages
-![User Analytics Page](./assets/userAnalytics.png)
+#### Product Search
+![Product Search](./assets/productSearchCust2.png)
 
-### Customer Functionalities
+#### Cart
+![Cart](./assets/Cart2.png)
 
-#### Home Page 
-![Home Page Customer](./assets/HomePageCustomer.png)
+#### Orders
+![Orders](./assets/OrderCustomerPage.png)
 
-#### Product View Page 
-![Product View Page Customer](./assets/productViewPage.png)
+#### Profile
+![Profile](./assets/userProfile.png)
 
-#### Product Search Page 
-![Product Search Page Customer](./assets/productSearchCust2.png)
+### Admin Experience
 
-#### Cart Page 
-![Cart Page Customer](./assets/Cart2.png)
+#### Add Product
+![Add Product](./assets/addProduct.png)
 
-#### Orders Page 
-![Cart Page Customer](./assets/OrderCustomerPage.png)
+#### Product Management
+![View Products](./assets/ViewProducts.png)
 
-#### User Profile Page
-![Cart Page Customer](./assets/userProfile.png)
+#### Product Search
+![Search Products](./assets/SearchProduct2.png)
 
-### Admin Functionalities
+#### Product Filtering
+![Sort Products](./assets/SortProduct.png)
 
-#### Add Product Page
-![Add Product Page](./assets/addProduct.png)
+#### Orders Management
+![Orders Admin](./assets/ordersAdminPage.png)
 
-#### View Products Page
-![View Products Page](./assets/ViewProducts.png)
+### Analytics
 
-#### Search Products by Name
-![Search Products by Name Page](./assets/SearchProduct2.png)
+#### Products Analytics
+![Products Analytics](./assets/Analytics.png)
 
-#### Search Products by Category
-![Search Products by Category Page](./assets/SortProduct.png)
+#### Sales Analytics
+![Sales Analytics](./assets/ProductSoldAnalytics.png)
 
-#### Orders Page
-![View Products Page](./assets/ordersAdminPage.png)
-
----
+#### User Analytics
+![User Analytics](./assets/userAnalytics.png)
 
 ## Features
 
-# Functional Features
-- **User Signup & Login** (JWT in HTTP‑only cookies)
-- **Role Guarding**: Separate dashboards for `admin` and `customer`
-- **Product Details Page**: View detailed information about a product, including images, price, description, and stock.
-- **Shopping Cart**: Add products to the shopping cart, view cart details.
-- **Place Order**: Place Order by entering the address of delievery.
-- **Search**: Searh Product by Name and category.
-- **Profile***: Seperate Page for user Profile.
+### Customer Features
 
-# Additional Feature
-- **Informational Sections**: Owner, Manager, Team members, Branches, Why Join Us, Testimonials
-- **Footer**: Contact info, quick links, social media icons
-- **Mobile‑friendly**: Tailwind CSS grid and responsive utilities
-- **Responsive Design**: Works seamlessly across all device sizes
+- User signup and login with JWT cookies
+- Browse and search products by name and category
+- View product details and stock availability
+- Add products to cart and manage quantities
+- Place orders with saved shipping addresses
+- View order history and profile stats
 
+### Admin Features
 
+- Secure admin-only dashboard
+- Add and manage products
+- Upload primary product images and separate cleaned display images
+- Review all orders and update fulfillment status
+- Use custom analytics visuals and embedded Power BI reports
 
----
+### UI Highlights
+
+- Premium warm-toned storefront design
+- Redesigned navigation, authentication, cart, orders, and profile pages
+- Updated admin dashboard, analytics studio, and footer styling
+- Responsive layout for desktop and mobile screens
 
 ## Tech Stack
 
-- **Framework**: Next.js App Router
-- **UI**: React, Tailwind CSS
-- **State**: React Context API
-- **API Requests**: Axios
-- **Auth**: JWT with HTTP‑only cookies
-- **Database**: MongoDB via Mongoose
+- Next.js App Router
+- React
+- Tailwind CSS
+- Axios
+- MongoDB
+- Mongoose
+- JWT authentication
+- Framer Motion
+- Power BI embed
 
+## Project Structure
 
----
+```text
+src/app/
+  api/                      API routes
+  components/               App pages and shared UI
+  context/                  Authentication context
+  lib/                      Helpers and utilities
+  models/                   Mongoose models
+public/
+  assets/                   Static images
+  uploads/                  Uploaded product images
+assets/                     README screenshots
+```
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js v16+
-- npm or Yarn
+- Node.js 18+
+- npm
+- MongoDB Atlas connection string
+
+### Environment Variables
+
+Create a `.env.local` file in the project root:
+
+```env
+MONGODB_URI="your-mongodb-uri"
+JWT_SECRET="your-jwt-secret"
+BLOB_READ_WRITE_TOKEN="your-vercel-blob-token"
+```
 
 ### Installation
 
-1. **Clone** the repo:
-   ```bash
-   git clone https://github.com/MuhammadMahi585/Xp
-   cd Xp
-## Install dependencies:
+```bash
+git clone https://github.com/MuhammadMahi585/Xp
+cd Xp
+npm install
+```
 
-npm i
+### Run Development Server
 
-## Run the website
-
+```bash
 npm run dev
+```
 
+Open:
 
+```text
+http://localhost:3000
+```
 
+### Production Build
+
+```bash
+npm run build
+npm run start
+```
+
+## Notes
+
+- The app uses Google fonts in `src/app/layout.js`, so builds may fail in fully offline environments unless those fonts are replaced or made local.
+- Admin analytics now include an in-code visual dashboard in addition to the embedded Power BI report.
+- If you want truly up-to-date README screenshots, replace the images inside the `assets/` folder with fresh captures from the latest UI.
