@@ -133,7 +133,7 @@ Welcome to the **Emporium Accessories** Next.js project! This repository contain
 1. **Clone** the repo:
    ```bash
    git clone https://github.com/MuhammadMahi585/The-Accessories-Emporium.git
-   cd Xp
+   
 ## Install dependencies:
 
 npm i
