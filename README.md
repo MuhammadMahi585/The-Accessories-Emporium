@@ -2,11 +2,13 @@
 
 Welcome to the **Emporium Accessories** Next.js project! This repository contains a fully functional web application with:
 
+- 🌐 Live site: [the-accessories-emporium.vercel.app](https://the-accessories-emporium.vercel.app)
+
 - 🔒 Role‑based authentication (Admin & Customer)
 - 🎨 Responsive, Tailwind‑CSS UI
 - 📊 Informational sections (Owner, Team, Branches, Why Join Us, Testimonials)
 - 📱 Sticky side panels and clean layouts
-- 📁 Easy image management via the `public/assets/images` folder
+- 📁 Easy image management via the `assets` folder
 
 ---
 
@@ -32,14 +34,11 @@ Welcome to the **Emporium Accessories** Next.js project! This repository contain
 
 ### Power BI Analytics
 
-#### Products Analytics Pages
-![Products Analytics Page](./assets/Analytics.png)
+<!-- #### Products Analytics Pages
+![Products Analytics Page](./assets/Analytics.png) -->
 
-#### Sales Analytics Pages
-![Sales Analytics Page](./assets/ProductSoldAnalytics.png)
-
-#### Users Analytics Pages
-![User Analytics Page](./assets/userAnalytics.png)
+#### Studio View Analytics
+![Studio View Analytics](./assets/StudioViewAnalytics.png)
 
 ### Customer Functionalities
 
@@ -49,34 +48,39 @@ Welcome to the **Emporium Accessories** Next.js project! This repository contain
 #### Product View Page 
 ![Product View Page Customer](./assets/productViewPage.png)
 
-#### Product Search Page 
-![Product Search Page Customer](./assets/productSearchCust2.png)
+#### Product Search and Filter Page 
+![Product Search Page Customer](./assets/ProductSearchCust2.png)
 
 #### Cart Page 
-![Cart Page Customer](./assets/Cart2.png)
+![Cart Page Customer](./assets/CartProduct.png)
 
 #### Orders Page 
-![Cart Page Customer](./assets/OrderCustomerPage.png)
+![Orders Page Customer](./assets/OrderCustomerPage.png)
 
 #### User Profile Page
-![Cart Page Customer](./assets/userProfile.png)
+![User Profile Page](./assets/userProfile.png)
 
 ### Admin Functionalities
 
 #### Add Product Page
 ![Add Product Page](./assets/addProduct.png)
 
-#### View Products Page
-![View Products Page](./assets/ViewProducts.png)
+#### Product Listing and Edit Page
+![Product Listing and Edit Page](./assets/productsAdminPage.png)
 
-#### Search Products by Name
-![Search Products by Name Page](./assets/SearchProduct2.png)
+#### Product Preview Modal
+![Product Preview Modal](./assets/ProductPreview.png)
 
-#### Search Products by Category
-![Search Products by Category Page](./assets/SortProduct.png)
+#### Search and Sort by Category
+![Search and Sort by Category](./assets/SortProduct.png)
 
 #### Orders Page
-![View Products Page](./assets/ordersAdminPage.png)
+![Orders Page](./assets/ordersAdminPage.png)
+
+### Extra Application Screens
+
+#### AI Assistant
+![AI Assistant](./assets/AIassistant.png)
 
 ---
 
@@ -85,11 +89,15 @@ Welcome to the **Emporium Accessories** Next.js project! This repository contain
 # Functional Features
 - **User Signup & Login** (JWT in HTTP‑only cookies)
 - **Role Guarding**: Separate dashboards for `admin` and `customer`
-- **Product Details Page**: View detailed information about a product, including images, price, description, and stock.
-- **Shopping Cart**: Add products to the shopping cart, view cart details.
-- **Place Order**: Place Order by entering the address of delievery.
-- **Search**: Searh Product by Name and category.
-- **Profile***: Seperate Page for user Profile.
+- **Customer Home Page**: A storefront landing page with featured categories and quick access to products and orders.
+- **Product Details Page**: View detailed information about a product, including images, price, description, stock, and multiple preview images.
+- **Product Search and Filtering**: Search products by name and filter them by category on the customer products page.
+- **Shopping Cart**: Add products to the shopping cart, view cart details, and place orders with a shipping address.
+- **Order Tracking**: Review customer order history and track statuses such as pending, processing, shipped, delivered, and cancelled.
+- **Profile Page**: Separate customer profile page with account details and order summary.
+- **Admin Product Management**: Add products, edit pricing and stock, update display images, and manage catalog listings.
+- **Admin Analytics Studio**: View revenue, stock, fulfillment, category sales, weekday demand, and top products.
+- **AI Assistant**: Use the Beat assistant for product guidance, order help, contact info, and store navigation.
 
 # Additional Feature
 - **Informational Sections**: Owner, Manager, Team members, Branches, Why Join Us, Testimonials
@@ -124,7 +132,7 @@ Welcome to the **Emporium Accessories** Next.js project! This repository contain
 
 1. **Clone** the repo:
    ```bash
-   git clone https://github.com/MuhammadMahi585/Xp
+   git clone https://github.com/MuhammadMahi585/The-Accessories-Emporium.git
    cd Xp
 ## Install dependencies:
 
