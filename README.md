@@ -1,6 +1,5 @@
 # Emporium Accessories Web Application
 
-Welcome to the **Emporium Accessories** Next.js project! This repository contains a fully functional web application with:
 
 - 🌐 Live site: [the-accessories-emporium.vercel.app](https://the-accessories-emporium.vercel.app)
 
