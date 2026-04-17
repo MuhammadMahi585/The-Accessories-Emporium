@@ -1,10 +1,10 @@
 "use client";
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import Link from "next/link";
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = useMemo(() => searchParams.get("token") || "", [searchParams]);
@@ -103,5 +103,22 @@ export default function ResetPasswordPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center px-4 py-10 bg-[var(--surface)]">
+          <div className="surface-card w-full max-w-md rounded-[2rem] p-8 text-center">
+            <h1 className="text-2xl font-extrabold text-stone-900">Loading reset page...</h1>
+            <p className="mt-2 text-sm text-stone-600">Please wait while we verify your reset link.</p>
+          </div>
+        </div>
+      }
+    >
+      <ResetPasswordContent />
+    </Suspense>
   );
 }

@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation"
 import "primeicons/primeicons.css"
 import Link from "next/link"
 import { FiArrowRight, FiCheckCircle, FiClock, FiMapPin, FiShield, FiStar } from "react-icons/fi"
+import BrandLogo from "@/app/components/shared/BrandLogo"
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
@@ -109,7 +110,9 @@ export default function SignupPage() {
           <div className="absolute -top-20 left-10 h-72 w-72 rounded-full bg-orange-500/25 blur-3xl" />
           <div className="absolute bottom-10 right-10 h-48 w-48 rounded-full bg-amber-300/20 blur-2xl" />
           <div className="relative z-10 mx-auto max-w-2xl xl:mx-0 xl:max-w-md">
-            <span className="pill-label mb-5 border-white/15 bg-white/10 text-orange-50">New Customer Access</span>
+            <div className="mb-5 inline-flex rounded-2xl border border-white/15 bg-white/10 px-3 py-2">
+              <BrandLogo compact alt="Accessories Emporium brand logo" className="opacity-95" />
+            </div>
             <motion.div
               variants={container}
               initial="hidden"

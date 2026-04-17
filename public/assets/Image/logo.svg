@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="160" viewBox="0 0 560 160" role="img" aria-labelledby="title desc">
+  <title id="title">Accessories Emporium Logo</title>
+  <desc id="desc">XP Accessories Emporium brand logo</desc>
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#ff7a2f"/>
+      <stop offset="100%" stop-color="#b83d08"/>
+    </linearGradient>
+  </defs>
+  <rect x="6" y="10" width="140" height="140" rx="28" fill="#1f140e"/>
+  <path d="M34 44h26l14 20 14-20h26L88 80l28 40H90L74 96l-16 24H32l28-40z" fill="url(#g)"/>
+  <path d="M123 44l-22 31h18l-9 13H86l22-31H90l9-13z" fill="#ffb083"/>
+  <g fill="#25170f" transform="translate(170 0)">
+    <text x="0" y="70" font-size="46" font-weight="800" font-family="Segoe UI, Arial, sans-serif" fill="#1f140e">Accessories</text>
+    <text x="0" y="118" font-size="46" font-weight="800" font-family="Segoe UI, Arial, sans-serif" fill="#1f140e">Emporium</text>
+    <rect x="2" y="130" width="214" height="8" rx="4" fill="url(#g)"/>
+  </g>
+</svg>

@@ -2,6 +2,7 @@
 import { useRouter } from 'next/navigation'
 import { FiArrowUpRight, FiBox, FiLogIn } from 'react-icons/fi'
 import { motion } from 'framer-motion'
+import BrandLogo from '@/app/components/shared/BrandLogo'
 import 'primeicons/primeicons.css'
 
 export default function PublicNavigation() {
@@ -40,17 +41,7 @@ export default function PublicNavigation() {
           onClick={() => router.push('/components/authentication/login')}
           className="flex items-center gap-3 text-left sm:self-start"
         >
-          <motion.div
-            animate={{ y: [0, -2, 0] }}
-            transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
-            className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#251912,#6f3b18)] text-sm font-bold text-orange-100 shadow-lg shadow-orange-900/20"
-          >
-            AE
-          </motion.div>
-          <div className="min-w-0">
-            <p className="text-base font-extrabold leading-tight text-stone-900 sm:text-xl">The Accesories Emporium</p>
-            <p className="text-[10px] uppercase tracking-[0.22em] text-stone-500 sm:text-xs">Curated tech storefront</p>
-          </div>
+          <BrandLogo />
         </motion.button>
 
         <motion.div variants={itemMotion} className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-end">
