@@ -49,7 +49,7 @@ Welcome to the **Emporium Accessories** Next.js project! This repository contain
 ![Product View Page Customer](./assets/productViewPage.png)
 
 #### Product Search and Filter Page 
-![Product Search Page Customer](./assets/ProductSearchCust2.png)
+![Product Search Page Customer](./assets/SortProduct.png)
 
 #### Cart Page 
 ![Cart Page Customer](./assets/CartProduct.png)
