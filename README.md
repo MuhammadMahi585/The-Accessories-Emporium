@@ -32,7 +32,7 @@ Welcome to the **Emporium Accessories** Next.js project! This repository contain
 #### SignUp Page
 ![SignUp Page](./assets/signup.png)
 
-### Power BI Analytics
+<!-- ### Power BI Analytics -->
 
 <!-- #### Products Analytics Pages
 ![Products Analytics Page](./assets/Analytics.png) -->
