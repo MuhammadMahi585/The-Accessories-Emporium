@@ -31,6 +31,9 @@
 #### SignUp Page
 ![SignUp Page](./assets/signup.png)
 
+#### Forgot Password Page
+![Forgot Password Page](./assets/forgetPassword.png)
+
 <!-- ### Power BI Analytics -->
 
 <!-- #### Products Analytics Pages
@@ -87,11 +90,15 @@
 
 # Functional Features
 - **User Signup & Login** (JWT in HTTP‑only cookies)
+- **Forgot Password & Reset Flow**: Users can request a reset link by email and securely set a new password.
 - **Role Guarding**: Separate dashboards for `admin` and `customer`
 - **Customer Home Page**: A storefront landing page with featured categories and quick access to products and orders.
 - **Product Details Page**: View detailed information about a product, including images, price, description, stock, and multiple preview images.
 - **Product Search and Filtering**: Search products by name and filter them by category on the customer products page.
 - **Shopping Cart**: Add products to the shopping cart, view cart details, and place orders with a shipping address.
+- **Local Payment Submission**: Checkout supports JazzCash, EasyPaisa, and Bank Transfer with payment reference and proof upload.
+- **Payment Review Workflow**: Admin can approve or reject submitted payments before order processing.
+- **Customer Payment Tracking**: Customers can view payment submission status and review results.
 - **Order Tracking**: Review customer order history and track statuses such as pending, processing, shipped, delivered, and cancelled.
 - **Profile Page**: Separate customer profile page with account details and order summary.
 - **Admin Product Management**: Add products, edit pricing and stock, update display images, and manage catalog listings.

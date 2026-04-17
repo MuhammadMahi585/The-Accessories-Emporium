@@ -18,6 +18,7 @@ import {
   FiClock,
   FiPackage,
   FiAlertCircle,
+  FiCheckCircle,
   FiMenu,
   FiChevronLeft,
   FiX,
@@ -61,6 +62,7 @@ function AdminDashboardContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [orders, setOrders] = useState([]);
+  const [pendingPayments, setPendingPayments] = useState([]);
   const [analyticsView, setAnalyticsView] = useState('studio');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -87,6 +89,7 @@ useEffect(() => {
     fetchProducts();
   } else if (tab === "orders") {
     fetchOrders();
+    fetchPendingPayments();
   } else if (tab === "analytics") {
     fetchProducts({ search: '', category: 'All' });
     fetchOrders();
@@ -122,6 +125,16 @@ useEffect(() => {
 
     } catch (error) {
       console.error('Error fetching orders:', error);
+    }
+  };
+
+  const fetchPendingPayments = async () => {
+    try {
+      const response = await axios.get('/api/payments/getPending');
+      setPendingPayments(response.data.payments || []);
+    } catch (error) {
+      console.error('Error fetching pending payments:', error);
+      setPendingPayments([]);
     }
   };
    
@@ -326,6 +339,28 @@ const handleStatus = async (e, orderId) => {
   }
 };
 
+const handleApprovePayment = async (paymentId) => {
+  try {
+    await axios.put('/api/payments/approve', { paymentId });
+    await fetchPendingPayments();
+    await fetchOrders();
+  } catch (error) {
+    console.error('Failed to approve payment', error);
+    alert(error.response?.data?.message || 'Failed to approve payment');
+  }
+};
+
+const handleRejectPayment = async (paymentId) => {
+  try {
+    await axios.put('/api/payments/reject', { paymentId });
+    await fetchPendingPayments();
+    await fetchOrders();
+  } catch (error) {
+    console.error('Failed to reject payment', error);
+    alert(error.response?.data?.message || 'Failed to reject payment');
+  }
+};
+
   const activeOrders = orders.filter((order) => ['pending', 'processing', 'shipped'].includes(order.status));
   const completedOrders = orders.filter((order) => order.status === 'delivered');
   const cancelledOrders = orders.filter((order) => order.status === 'cancelled');
@@ -462,7 +497,7 @@ const handleStatus = async (e, orderId) => {
       />
       <div className="mx-auto flex max-w-[1600px] flex-col gap-6 lg:flex-row">
         <aside
-          className={`fixed inset-y-4 left-4 z-50 w-[88vw] max-w-[340px] transition duration-300 lg:static lg:inset-auto lg:z-auto lg:max-w-none lg:translate-x-0 ${
+          className={`fixed inset-y-3 left-2 right-2 z-50 w-auto max-w-none transition duration-300 sm:left-4 sm:right-auto sm:w-[88vw] sm:max-w-[340px] lg:static lg:inset-auto lg:z-auto lg:max-w-none lg:translate-x-0 ${
             mobileSidebarOpen ? 'translate-x-0' : '-translate-x-[120%]'
           } ${sidebarCollapsed ? 'lg:w-[112px]' : 'lg:w-[340px]'} lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)] lg:flex-shrink-0`}
         >
@@ -1252,7 +1287,7 @@ const handleStatus = async (e, orderId) => {
                       </span>
                     </div>
                     <div className="-mx-1 overflow-x-auto pb-2">
-                      <div className="grid min-w-[630px] grid-cols-7 gap-3 px-1">
+                      <div className="grid min-w-[560px] grid-cols-7 gap-3 px-1 sm:min-w-[630px]">
                         {weekdayDemand.map((day) => (
                         <div key={day.label} className="rounded-[1.25rem] border border-[var(--line)] bg-[var(--surface)] p-3 text-center">
                           <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-stone-500">{day.label}</p>
@@ -1501,6 +1536,88 @@ const handleStatus = async (e, orderId) => {
                 </div>
               </div>
             </div>
+
+            {pendingPayments.length > 0 && (
+              <div className="mb-8 rounded-[1.75rem] border border-amber-200 bg-[linear-gradient(180deg,#fff8e1,#fff3c9)] p-5">
+                <div className="mb-4 flex items-center gap-2">
+                  <FiAlertCircle className="text-amber-700" />
+                  <h3 className="text-lg font-semibold text-stone-900">Pending payment reviews</h3>
+                </div>
+                <div className="space-y-4">
+                  {pendingPayments.map((payment) => (
+                    <div key={payment.paymentId} className="rounded-[1.5rem] border border-[var(--line)] bg-white/80 p-5 shadow-sm">
+                      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="space-y-2">
+                          <p className="text-xs uppercase tracking-[0.18em] text-stone-500">{payment.method}</p>
+                          <h4 className="text-lg font-semibold text-stone-900">{payment.user?.name || 'Unknown customer'}</h4>
+                          <p className="text-sm text-stone-600">{payment.user?.email || 'N/A'} · {payment.user?.number || 'N/A'}</p>
+                          <p className="text-sm text-stone-700">Amount: Rs {payment.amount?.toLocaleString?.() || payment.amount}</p>
+                          <p className="text-sm text-stone-700">Transaction ID: {payment.paymentRef || 'N/A'}</p>
+                          {payment.gatewayDetails?.mobileNumber && (
+                            <p className="text-sm text-stone-700">Mobile Number: {payment.gatewayDetails.mobileNumber}</p>
+                          )}
+                          {payment.gatewayDetails?.bankName && (
+                            <p className="text-sm text-stone-700">Bank: {payment.gatewayDetails.bankName}</p>
+                          )}
+                          {payment.gatewayDetails?.accountNumber && (
+                            <p className="text-sm text-stone-700">Account Number: {payment.gatewayDetails.accountNumber}</p>
+                          )}
+                          <p className="text-sm text-stone-700">Placed: {new Date(payment.createdAt).toLocaleString()}</p>
+                        </div>
+                        <div className="flex flex-wrap gap-3">
+                          {payment.paymentProofUrl && (
+                            <a
+                              href={payment.paymentProofUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-2 rounded-full border border-[var(--line)] bg-white px-4 py-2 text-sm font-semibold text-stone-700 transition hover:bg-[var(--surface)]"
+                            >
+                              View Proof
+                            </a>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleApprovePayment(payment.paymentId)}
+                            className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                          >
+                            <FiCheckCircle />
+                            Approve
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRejectPayment(payment.paymentId)}
+                            className="inline-flex items-center gap-2 rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700"
+                          >
+                            <FiX />
+                            Reject
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+                        <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-4 text-sm text-stone-700">
+                          <p className="mb-2 font-semibold text-stone-900">Shipping address</p>
+                          <p>{payment.shippingAddress?.street || 'N/A'}</p>
+                          <p>{payment.shippingAddress?.city || 'N/A'}, {payment.shippingAddress?.state || 'N/A'}</p>
+                          <p>{payment.shippingAddress?.postalCode || 'N/A'}, {payment.shippingAddress?.country || 'N/A'}</p>
+                        </div>
+                        <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-4 text-sm text-stone-700">
+                          <p className="mb-2 font-semibold text-stone-900">Cart snapshot</p>
+                          <div className="space-y-2">
+                            {payment.cartSnapshot?.map((item) => (
+                              <div key={item.productId} className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white px-3 py-2">
+                                <span>{item.quantity}x {item.productName || 'Product'}</span>
+                                <span>Rs {(item.price * item.quantity).toLocaleString()}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             
             <div className="space-y-4">
               {orders.length > 0 ? (
@@ -1519,7 +1636,7 @@ const handleStatus = async (e, orderId) => {
                           })}
                         </p>
                       </div>
-                      <div className="min-w-[180px] rounded-[1.25rem] border border-[var(--line)] bg-white/85 px-4 py-3 shadow-sm">
+                      <div className="w-full rounded-[1.25rem] border border-[var(--line)] bg-white/85 px-4 py-3 shadow-sm sm:w-[180px]">
                         <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-stone-500">Status</p>
                         <select
                           id="status"

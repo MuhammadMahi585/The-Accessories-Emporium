@@ -8,7 +8,7 @@ export default function CustomerLayout({ children }) {
         {/* Navigation stays fixed */}
         <Navigation />
         {/* Main content */}
-        <main className="flex-grow">{children}</main> {/* Adjust padding here if necessary */}
+        <main className="page-enter flex-grow">{children}</main>
         <StoreAssistant />
       </div>
     );

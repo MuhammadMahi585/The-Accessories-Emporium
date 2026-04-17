@@ -3,19 +3,13 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
 import { useAuth } from '@/app/context/AuthContext'
-import { FiArrowUpRight, FiBox, FiHome, FiLogOut, FiShoppingBag, FiShoppingCart, FiUser } from 'react-icons/fi'
+import { FiArrowRight, FiArrowUpRight, FiBox, FiHome, FiLogOut, FiShoppingBag, FiShoppingCart, FiUser } from 'react-icons/fi'
 import { motion } from 'framer-motion'
 import 'primeicons/primeicons.css'
 
 export default function Navigation() {
   const router = useRouter()
   const { auth, setAuth } = useAuth()
-
-  useEffect(() => {
-    if (!auth.isLoading && !auth.isAuthenticated) {
-      router.replace('/components/authentication/login')
-    }
-  }, [auth.isLoading, auth.isAuthenticated, router])
 
   const logout = async () => {
     try {
@@ -39,17 +33,20 @@ export default function Navigation() {
     </div>
   }
 
-  if (!auth.isAuthenticated) {
-    return null
-  }
-
-  const navItems = [
-    { label: "Home", icon: FiHome, href: "/components/dashboard/customer" },
-    { label: "Products", icon: FiBox, href: "/components/customerComponents/products" },
-    { label: "Cart", icon: FiShoppingCart, href: "/components/customerComponents/cart" },
-    { label: "Orders", icon: FiShoppingBag, href: "/components/customerComponents/order" },
-    { label: "Profile", icon: FiUser, href: "/components/customerComponents/profile" },
-  ]
+  const navItems = auth.isAuthenticated
+    ? [
+        { label: "Home", icon: FiHome, href: "/components/dashboard/customer" },
+        { label: "Products", icon: FiBox, href: "/components/customerComponents/products" },
+        { label: "Cart", icon: FiShoppingCart, href: "/components/customerComponents/cart" },
+        { label: "Payments", icon: FiShoppingBag, href: "/components/customerComponents/payment" },
+        { label: "Orders", icon: FiShoppingBag, href: "/components/customerComponents/order" },
+        { label: "Profile", icon: FiUser, href: "/components/customerComponents/profile" },
+      ]
+    : [
+        { label: "Home", icon: FiHome, href: "/" },
+        { label: "Products", icon: FiBox, href: "/components/customerComponents/products" },
+        { label: "Login", icon: FiUser, href: "/components/authentication/login" },
+      ]
 
   const headerMotion = {
     hidden: { opacity: 0, y: -18 },
@@ -98,8 +95,8 @@ export default function Navigation() {
         </motion.button>
 
         <motion.div variants={itemMotion} className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-end">
-          <nav className="glass-panel w-full rounded-[1.75rem] px-2 py-2 lg:w-auto lg:rounded-full">
-            <ul className="flex flex-wrap items-center justify-center gap-1 text-sm font-medium text-stone-700 sm:justify-start lg:justify-center">
+          <nav className="glass-panel w-full overflow-x-auto rounded-[1.75rem] px-2 py-2 lg:w-auto lg:rounded-full">
+            <ul className="flex min-w-max items-center gap-1 text-sm font-medium text-stone-700 lg:min-w-0 lg:justify-center">
               {navItems.map(({ label, icon: Icon, href }, index) => (
                 <motion.li
                   key={label}
@@ -109,7 +106,7 @@ export default function Navigation() {
                 >
                   <motion.button
                     onClick={() => router.push(href)}
-                    className="flex min-h-[42px] items-center gap-2 rounded-full px-3 py-2 transition hover:bg-white/70 hover:text-stone-900 sm:px-4"
+                    className="flex min-h-[42px] items-center gap-2 whitespace-nowrap rounded-full px-3 py-2 transition hover:bg-white/70 hover:text-stone-900 sm:px-4"
                     whileHover={{ y: -2, scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -121,22 +118,40 @@ export default function Navigation() {
             </ul>
           </nav>
 
-          <motion.div variants={itemMotion} className="flex w-full items-center justify-between gap-3 rounded-[1.5rem] border border-[var(--line)] bg-white/70 px-3 py-2 shadow-sm sm:px-4 lg:w-auto lg:rounded-full">
-            <div className="min-w-0">
-              <p className="text-xs uppercase tracking-[0.22em] text-stone-500">Account</p>
-              <p className="truncate text-sm font-semibold text-stone-900">Signed in</p>
-            </div>
-            <motion.button
-              onClick={logout}
-              className="brand-button flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold shadow-lg shadow-orange-900/15"
-              whileHover={{ y: -2, scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <FiLogOut className="text-base" />
-              <span>Logout</span>
-              <FiArrowUpRight className="text-base" />
-            </motion.button>
-          </motion.div>
+          {auth.isAuthenticated ? (
+            <motion.div variants={itemMotion} className="flex w-full flex-col items-start gap-3 rounded-[1.5rem] border border-[var(--line)] bg-white/70 px-3 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:px-4 lg:w-auto lg:rounded-full">
+              <div className="min-w-0">
+                <p className="text-xs uppercase tracking-[0.22em] text-stone-500">Account</p>
+                <p className="truncate text-sm font-semibold text-stone-900">Signed in</p>
+              </div>
+              <motion.button
+                onClick={logout}
+                className="brand-button flex w-full shrink-0 items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold shadow-lg shadow-orange-900/15 sm:w-auto"
+                whileHover={{ y: -2, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <FiLogOut className="text-base" />
+                <span>Logout</span>
+                <FiArrowUpRight className="text-base" />
+              </motion.button>
+            </motion.div>
+          ) : (
+            <motion.div variants={itemMotion} className="flex w-full flex-col items-start gap-3 rounded-[1.5rem] border border-[var(--line)] bg-white/70 px-3 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:px-4 lg:w-auto lg:rounded-full">
+              <div className="min-w-0">
+                <p className="text-xs uppercase tracking-[0.22em] text-stone-500">Visitor</p>
+                <p className="truncate text-sm font-semibold text-stone-900">Browse before login</p>
+              </div>
+              <motion.button
+                onClick={() => router.push('/components/authentication/login')}
+                className="brand-button flex w-full shrink-0 items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold shadow-lg shadow-orange-900/15 sm:w-auto"
+                whileHover={{ y: -2, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <span>Login</span>
+                <FiArrowRight className="text-base" />
+              </motion.button>
+            </motion.div>
+          )}
         </motion.div>
       </div>
     </motion.header>

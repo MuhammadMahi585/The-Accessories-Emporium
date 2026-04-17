@@ -29,7 +29,7 @@ export default function RootLayout({ children }) {
         crossOrigin="anonymous"
       />
       </head>
-      <body className={`${jakartaSans.variable} ${spaceGrotesk.variable}`}>
+      <body className={`${jakartaSans.variable} ${spaceGrotesk.variable} overflow-x-hidden`}>
         <AuthProvider>
           {children}
         </AuthProvider>

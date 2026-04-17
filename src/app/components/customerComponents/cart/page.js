@@ -7,6 +7,8 @@ import axios from 'axios'
 import {
   FiAlertCircle,
   FiArrowRight,
+  FiCheckCircle,
+  FiInfo,
   FiMapPin,
   FiPackage,
   FiShield,
@@ -29,6 +31,16 @@ export default function Cart() {
     postalCode: '',
     country: '',
   })
+  const [paymentMethod, setPaymentMethod] = useState('JazzCash')
+  const [transactionId, setTransactionId] = useState('')
+  const [mobileNumber, setMobileNumber] = useState('')
+  const [bankName, setBankName] = useState('')
+  const [accountNumber, setAccountNumber] = useState('')
+  const [paymentProofFile, setPaymentProofFile] = useState(null)
+  const [paymentProofUrl, setPaymentProofUrl] = useState('')
+  const [isProofUploading, setIsProofUploading] = useState(false)
+  const [submissionMessage, setSubmissionMessage] = useState('')
+  const [submissionType, setSubmissionType] = useState('payment')
   const [orderConfirmed, setOrderConfirmed] = useState(false)
   const [originalCartQuantities, setOriginalCartQuantities] = useState({})
   const [originalProductNames, setOriginalProductNames] = useState({})
@@ -92,36 +104,107 @@ export default function Cart() {
     (sum, item) => sum + item.product.price * (item.quantity ?? 1),
     0
   )
+  const isMobileWallet = ['JazzCash', 'EasyPaisa'].includes(paymentMethod)
+  const isBankTransfer = paymentMethod === 'Bank'
+  const localPaymentGuides = {
+    JazzCash: {
+      title: 'JazzCash Checkout Steps',
+      points: [
+        'Transfer the exact order amount to JazzCash account 03042454893.',
+        'Account holder: Muhammad Mahi.',
+        'Use the same mobile number for payment that you enter below.',
+        'Save the screenshot and upload it as proof before submitting.'
+      ]
+    },
+    EasyPaisa: {
+      title: 'EasyPaisa Checkout Steps',
+      points: [
+        'Send the order amount to EasyPaisa account 03423566601.',
+        'Enter the EasyPaisa transaction/reference ID exactly as shown in the app/SMS.',
+        'Upload a clear screenshot receipt so the admin can verify quickly.'
+      ]
+    },
+    Bank: {
+      title: 'Bank Transfer Steps',
+      points: [
+        'Transfer the exact amount to Meezan Bank account 00300112532367.',
+        'Account holder: Muhammad Mahi.',
+        'Enter the sending bank name and sender account/IBAN used for this transfer.',
+        'Upload bank transfer proof or receipt slip before submitting for review.'
+      ]
+    }
+  }
+
+  const uploadPaymentProof = async (selectedFile) => {
+    const uploadFormData = new FormData()
+    uploadFormData.append('file', selectedFile)
+
+    const response = await axios.post('/api/upload', uploadFormData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+
+    return response.data.url
+  }
+
+  const handlePaymentProofUpload = async () => {
+    if (!paymentProofFile) {
+      alert('Please select a proof file first!')
+      return
+    }
+
+    try {
+      setIsProofUploading(true)
+      const url = await uploadPaymentProof(paymentProofFile)
+      setPaymentProofUrl(url)
+      setPaymentProofFile(null)
+    } catch (error) {
+      console.error('Payment proof upload failed:', error)
+      alert(error.response?.data?.error || 'Proof upload failed')
+    } finally {
+      setIsProofUploading(false)
+    }
+  }
 
   const placeOrder = async () => {
+    setSubmissionMessage('')
+
     try {
-      const res = await axios.post('/api/orders/addOrder', {
-        shippingAddress,
-        confirm: orderConfirmed,
-      })
-
-      if (res.data.adjustments?.length > 0 && !orderConfirmed) {
-        const updatedCart = [...cart]
-
-        res.data.adjustments.forEach((adj) => {
-          const idx = updatedCart.findIndex((item) => item.product._id === adj.product)
-          if (adj.status === 'adjusted' && idx !== -1) updatedCart[idx].quantity = adj.newQuantity
-          if (adj.status === 'removed' && idx !== -1) updatedCart.splice(idx, 1)
-        })
-
-        setCart(updatedCart)
-
-        const sorted = [...res.data.adjustments].sort((a, b) => {
-          if (a.status === 'removed' && b.status !== 'removed') return -1
-          if (a.status !== 'removed' && b.status === 'removed') return 1
-          return 0
-        })
-
-        setStatusSummary(sorted)
-        setOrderConfirmed(true)
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
+      if (!transactionId.trim()) {
+        alert(`Please enter your ${paymentMethod} transaction ID.`)
         return
       }
+
+      if (isMobileWallet && !mobileNumber.trim()) {
+        alert(`Please enter the mobile number used for ${paymentMethod}.`)
+        return
+      }
+
+      if (isBankTransfer && !bankName.trim()) {
+        alert('Please enter your bank name.')
+        return
+      }
+
+      if (isBankTransfer && !accountNumber.trim()) {
+        alert('Please enter the bank account number used for the transfer.')
+        return
+      }
+
+      if (!paymentProofUrl) {
+        alert('Please upload your payment proof first.')
+        return
+      }
+
+      const res = await axios.post('/api/payments/create', {
+        paymentMethod,
+        transactionId,
+        paymentProofUrl,
+        mobileNumber,
+        bankName,
+        accountNumber,
+        shippingAddress,
+      })
 
       if (res.data.success) {
         setCart([])
@@ -129,11 +212,19 @@ export default function Cart() {
         setOrderConfirmed(false)
         setOriginalCartQuantities({})
         setOriginalProductNames({})
-        alert('Order placed successfully!')
+        setTransactionId('')
+        setMobileNumber('')
+        setBankName('')
+        setAccountNumber('')
+        setPaymentProofFile(null)
+        setPaymentProofUrl('')
+        setSubmissionType('payment')
+        setSubmissionMessage(`Your ${paymentMethod} payment has been submitted for review. We will create your order after admin approval.`)
         fetchCart()
-      } else {
-        alert(`Failed to place order: ${res.data.message}`)
+        return
       }
+
+      alert(res.data.message || 'Failed to submit payment')
     } catch (error) {
       console.log('Error placing order:', error.message)
       alert('An error occurred while placing your order.')
@@ -209,7 +300,7 @@ export default function Cart() {
                 </div>
 
                 <div className="mt-5 overflow-x-auto rounded-2xl border border-amber-200 bg-white/70">
-                  <table className="w-full min-w-[560px] text-left text-sm">
+                  <table className="w-full min-w-[480px] text-left text-sm sm:min-w-[560px]">
                     <thead className="bg-white/60 text-stone-700">
                       <tr>
                         <th className="px-4 py-3">Product</th>
@@ -245,6 +336,35 @@ export default function Cart() {
                       })}
                     </tbody>
                   </table>
+                </div>
+              </div>
+            )}
+
+            {submissionMessage && (
+              <div className="mb-8 rounded-[1.5rem] border border-emerald-200 bg-[linear-gradient(180deg,#ecfdf5,#d1fae5)] p-5 shadow-sm">
+                <div className="flex items-start gap-3">
+                  <div className="rounded-full bg-emerald-100 p-2 text-emerald-700">
+                    <FiCheckCircle />
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="text-lg font-semibold text-stone-900">Payment update</h2>
+                    <p className="mt-1 text-sm text-stone-700">{submissionMessage}</p>
+                    <div className="mt-4 flex flex-wrap gap-3">
+                      <button
+                        onClick={() => router.push(submissionType === 'payment' ? '/components/customerComponents/payment' : '/components/customerComponents/order')}
+                        className="brand-button inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold shadow-sm"
+                      >
+                        {submissionType === 'payment' ? 'View Payment Status' : 'View Orders'}
+                        <FiArrowRight />
+                      </button>
+                      <button
+                        onClick={() => setSubmissionMessage('')}
+                        className="inline-flex items-center gap-2 rounded-full border border-[var(--line)] bg-white px-5 py-2.5 text-sm font-semibold text-stone-700 transition hover:bg-[var(--surface)]"
+                      >
+                        Dismiss
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
@@ -339,6 +459,145 @@ export default function Cart() {
 
                     <div className="mt-6">
                       <div className="mb-4 flex items-center gap-2">
+                        <FiShield className="text-[var(--brand)]" />
+                        <h3 className="text-lg font-semibold text-stone-900">Payment Method</h3>
+                      </div>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        {[
+                          { value: 'JazzCash', label: 'JazzCash', description: 'Upload proof and submit for approval.' },
+                          { value: 'EasyPaisa', label: 'EasyPaisa', description: 'Share your transaction details and upload proof.' },
+                          { value: 'Bank', label: 'Bank Transfer', description: 'Submit transfer details and proof for review.' },
+                        ].map((option) => (
+                          <label
+                            key={option.value}
+                            className={`cursor-pointer rounded-2xl border px-4 py-4 transition ${
+                              paymentMethod === option.value
+                                ? 'border-[var(--brand)] bg-orange-50'
+                                : 'border-[var(--line)] bg-[var(--surface)]'
+                            }`}
+                          >
+                            <div className="flex items-start gap-3">
+                              <input
+                                type="radio"
+                                name="paymentMethod"
+                                value={option.value}
+                                checked={paymentMethod === option.value}
+                                onChange={(e) => setPaymentMethod(e.target.value)}
+                                className="mt-1"
+                              />
+                              <div>
+                                <p className="font-semibold text-stone-900">{option.label}</p>
+                                <p className="mt-1 text-sm text-stone-600">{option.description}</p>
+                              </div>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+
+                      {paymentMethod && (
+                        <div className="mt-4 space-y-4 rounded-2xl border border-[var(--line)] bg-white/70 p-4">
+                          <div className="rounded-xl bg-[linear-gradient(180deg,#fff7ed,#ffedd5)] p-4 text-sm text-stone-700">
+                            {paymentMethod === 'Bank'
+                              ? 'Bank transfer submissions are reviewed by the admin before your order is created.'
+                              : `${paymentMethod} payments are reviewed by the admin before your order is created.`}
+                          </div>
+
+                          <div className="rounded-xl border border-[var(--line)] bg-[var(--surface)] p-4 text-sm text-stone-700">
+                            <p className="mb-2 inline-flex items-center gap-2 font-semibold text-stone-900">
+                              <FiInfo className="text-[var(--brand)]" />
+                              {localPaymentGuides[paymentMethod]?.title || 'Payment Steps'}
+                            </p>
+                            <ul className="list-disc space-y-1 pl-5">
+                              {(localPaymentGuides[paymentMethod]?.points || []).map((point) => (
+                                <li key={point}>{point}</li>
+                              ))}
+                            </ul>
+                          </div>
+
+                          <div>
+                            <label className="mb-1 block text-sm font-medium text-stone-700">
+                              {paymentMethod} Transaction / Reference ID
+                            </label>
+                            <input
+                              type="text"
+                              value={transactionId}
+                              onChange={(e) => setTransactionId(e.target.value)}
+                              placeholder={`Enter your ${paymentMethod} reference number`}
+                              className="w-full rounded-xl border border-[var(--line)] bg-[var(--surface)] px-4 py-3 text-stone-900 placeholder-stone-400"
+                            />
+                          </div>
+
+                          {isMobileWallet && (
+                            <div>
+                              <label className="mb-1 block text-sm font-medium text-stone-700">Mobile Number Used</label>
+                              <input
+                                type="text"
+                                value={mobileNumber}
+                                onChange={(e) => setMobileNumber(e.target.value)}
+                                placeholder="03XXXXXXXXX"
+                                className="w-full rounded-xl border border-[var(--line)] bg-[var(--surface)] px-4 py-3 text-stone-900 placeholder-stone-400"
+                              />
+                            </div>
+                          )}
+
+                          {isBankTransfer && (
+                            <div className="grid gap-4 sm:grid-cols-2">
+                              <div>
+                                <label className="mb-1 block text-sm font-medium text-stone-700">Bank Name</label>
+                                <input
+                                  type="text"
+                                  value={bankName}
+                                  onChange={(e) => setBankName(e.target.value)}
+                                  placeholder="HBL, UBL, Meezan, etc."
+                                  className="w-full rounded-xl border border-[var(--line)] bg-[var(--surface)] px-4 py-3 text-stone-900 placeholder-stone-400"
+                                />
+                              </div>
+                              <div>
+                                <label className="mb-1 block text-sm font-medium text-stone-700">Account Number</label>
+                                <input
+                                  type="text"
+                                  value={accountNumber}
+                                  onChange={(e) => setAccountNumber(e.target.value)}
+                                  placeholder="Sender account or IBAN"
+                                  className="w-full rounded-xl border border-[var(--line)] bg-[var(--surface)] px-4 py-3 text-stone-900 placeholder-stone-400"
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          <div>
+                            <label className="mb-1 block text-sm font-medium text-stone-700">Payment Proof</label>
+                            <div className="flex flex-col gap-3 sm:flex-row">
+                              <input
+                                type="file"
+                                accept="image/*,.pdf"
+                                onChange={(e) => setPaymentProofFile(e.target.files?.[0] || null)}
+                                className="block w-full text-sm text-gray-600 file:mr-4 file:rounded file:border-0 file:bg-gray-100 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-gray-600 hover:file:bg-gray-200"
+                              />
+                              <button
+                                type="button"
+                                onClick={handlePaymentProofUpload}
+                                disabled={!paymentProofFile || isProofUploading}
+                                className={`rounded-xl px-4 py-3 text-sm font-semibold text-white ${(!paymentProofFile || isProofUploading) ? 'cursor-not-allowed bg-stone-400' : 'brand-button'}`}
+                              >
+                                {isProofUploading ? 'Uploading...' : 'Upload Proof'}
+                              </button>
+                            </div>
+
+                            {paymentProofUrl && (
+                              <p className="mt-2 break-all text-xs text-emerald-700">
+                                Uploaded proof: {paymentProofUrl}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="rounded-xl bg-[linear-gradient(180deg,#fff7ed,#ffedd5)] p-4 text-sm text-stone-700">
+                            After submission, your cart will be cleared and the order will be created once the admin approves your payment proof.
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="mb-4 flex items-center gap-2">
                         <FiMapPin className="text-[var(--brand)]" />
                         <h3 className="text-lg font-semibold text-stone-900">Shipping Address</h3>
                       </div>
@@ -367,7 +626,7 @@ export default function Cart() {
                           <FiShield />
                         </div>
                         <p>
-                          Your order details are reviewed against available stock before final confirmation.
+                          Local payment submissions are reviewed by the admin before your order is created.
                         </p>
                       </div>
                     </div>

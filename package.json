@@ -21,6 +21,7 @@
     "mongodb": "^6.16.0",
     "mongoose": "^8.13.2",
     "next": "^16.1.1",
+    "nodemailer": "^8.0.5",
     "pdf-parse": "^2.4.5",
     "primeicons": "^7.0.0",
     "react": "^19.2.3",

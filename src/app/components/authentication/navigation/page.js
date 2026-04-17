@@ -54,8 +54,8 @@ export default function PublicNavigation() {
         </motion.button>
 
         <motion.div variants={itemMotion} className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-end">
-          <nav className="glass-panel w-full rounded-[1.75rem] px-2 py-2 lg:w-auto lg:rounded-full">
-            <ul className="flex flex-wrap items-center justify-center gap-1 text-sm font-medium text-stone-700 sm:justify-start lg:justify-center">
+          <nav className="glass-panel w-full overflow-x-auto rounded-[1.75rem] px-2 py-2 lg:w-auto lg:rounded-full">
+            <ul className="flex min-w-max items-center gap-1 text-sm font-medium text-stone-700 lg:min-w-0 lg:justify-center">
               <motion.li
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -64,7 +64,7 @@ export default function PublicNavigation() {
               >
                 <motion.button
                   onClick={() => router.push('/components/customerComponents/products')}
-                  className="flex min-h-[42px] items-center gap-2 rounded-full px-3 py-2 transition hover:bg-white/70 hover:text-stone-900 sm:px-4"
+                  className="flex min-h-[42px] items-center gap-2 whitespace-nowrap rounded-full px-3 py-2 transition hover:bg-white/70 hover:text-stone-900 sm:px-4"
                   whileHover={{ y: -2, scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >

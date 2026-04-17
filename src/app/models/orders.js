@@ -20,6 +20,23 @@ const orderSchema = new mongoose.Schema({
       country: { type: String, default: "Pakistan" },
       isDefault: { type: Boolean, default: true }
     },    
+    paymentMethod: {
+      type: String,
+      enum: ["JazzCash", "EasyPaisa", "Bank"],
+      default: "JazzCash"
+    },
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "completed", "failed", "refunded"],
+      default: "pending"
+    },
+    paymentRef: { type: String },
+    paymentProofUrl: { type: String },
+    paymentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Payment"
+    },
+    paymentReviewedAt: { type: Date },
     status: {
       type: String,
       enum: ["pending", "processing", "shipped", "delivered", "cancelled"],

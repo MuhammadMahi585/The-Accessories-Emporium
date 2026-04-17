@@ -39,6 +39,24 @@ const Home = () => {
     },
   };
 
+  const cardGroup = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.11, delayChildren: 0.12 },
+    },
+  };
+
+  const cardItem = {
+    hidden: { opacity: 0, y: 18, scale: 0.97 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
+    },
+  };
+
   const ran = useRef(false);
 
   useEffect(() => {
@@ -92,7 +110,7 @@ const Home = () => {
       <section className="ambient-grid relative overflow-hidden px-4 pb-16 pt-8 sm:px-6 lg:px-8">
         <div className="absolute left-[8%] top-20 h-40 w-40 rounded-full bg-orange-400/20 blur-3xl" />
         <div className="absolute right-[10%] top-24 h-56 w-56 rounded-full bg-amber-200/60 blur-3xl" />
-        <div className="section-shell grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+        <div className="section-shell grid gap-8 xl:grid-cols-[1.15fr_0.85fr] xl:items-center">
           <div className="relative">
             <span className="pill-label mb-6">
               <FiStar className="text-[var(--brand)]" />
@@ -114,37 +132,47 @@ const Home = () => {
               A cleaner way to shop for laptops, accessories, and everyday performance gear with support that still feels personal.
             </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <motion.div
+              className="mt-8 flex flex-col gap-3 sm:flex-row"
+              variants={cardGroup}
+              initial="hidden"
+              animate="visible"
+            >
               <button
                 onClick={() => router.push("/components/customerComponents/products")}
-                className="brand-button inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold shadow-lg shadow-orange-900/15"
+                className="brand-button hover-lift inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold shadow-lg shadow-orange-900/15"
               >
                 Explore Products
                 <FiArrowRight />
               </button>
               <button
                 onClick={() => router.push("/components/customerComponents/order")}
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-[var(--line)] bg-white/70 px-6 py-3 text-sm font-semibold text-stone-800 shadow-sm transition hover:bg-white"
+                className="hover-lift inline-flex items-center justify-center gap-2 rounded-full border border-[var(--line)] bg-white/70 px-6 py-3 text-sm font-semibold text-stone-800 shadow-sm transition hover:bg-white"
               >
                 View My Orders
                 <FiShoppingBag />
               </button>
-            </div>
+            </motion.div>
 
-            <div className="mt-10 grid gap-4 sm:grid-cols-3">
+            <motion.div
+              className="mt-10 grid gap-4 sm:grid-cols-3"
+              variants={cardGroup}
+              initial="hidden"
+              animate="visible"
+            >
               {stats.map((item) => (
-                <div key={item.label} className="surface-card rounded-3xl p-5">
+                <motion.div key={item.label} variants={cardItem} className="surface-card hover-lift rounded-3xl p-5">
                   <p className="text-3xl font-extrabold text-stone-900">{item.value}</p>
                   <p className="mt-2 text-sm text-stone-600">{item.label}</p>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           </div>
 
           <motion.div
             className="glass-panel relative rounded-[2rem] p-5 sm:p-7"
-            whileHover={{ y: -6, rotateX: 4, rotateY: -4 }}
-            transition={{ duration: 0.35 }}
+            whileHover={{ y: -8, rotateX: 6, rotateY: -6, scale: 1.01 }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
             style={{ transformStyle: "preserve-3d" }}
           >
             <div className="rounded-[1.75rem] bg-[linear-gradient(160deg,#201611_0%,#3d2414_55%,#7b431d_100%)] p-6 text-white shadow-2xl">
@@ -158,9 +186,14 @@ const Home = () => {
                 </div>
               </div>
 
-              <div className="mt-8 space-y-4">
+              <motion.div
+                className="mt-8 space-y-4"
+                variants={cardGroup}
+                initial="hidden"
+                animate="visible"
+              >
                 {trustPoints.map(({ icon: Icon, title, text }) => (
-                  <div key={title} className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur-sm">
+                  <motion.div key={title} variants={cardItem} className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur-sm">
                     <div className="flex items-start gap-3">
                       <div className="mt-1 rounded-xl bg-white/10 p-2">
                         <Icon className="text-lg text-orange-100" />
@@ -170,9 +203,9 @@ const Home = () => {
                         <p className="mt-1 text-sm text-stone-200">{text}</p>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
 
               <div className="mt-8 rounded-2xl bg-white/10 p-4 text-sm text-stone-100">
                 <div className="flex items-center gap-2 text-orange-100">
@@ -189,8 +222,14 @@ const Home = () => {
       </section>
 
       <section className="px-4 py-16 sm:px-6 lg:px-8">
-        <div className="section-shell grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="surface-card rounded-[2rem] p-8">
+        <div className="section-shell grid gap-8 xl:grid-cols-[0.9fr_1.1fr]">
+          <motion.div
+            className="surface-card hover-lift rounded-[2rem] p-8"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.35 }}
+            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          >
             <span className="pill-label mb-4">
               <FiLayers className="text-[var(--brand)]" />
               About the store
@@ -213,15 +252,22 @@ const Home = () => {
                 </div>
               ))}
             </div>
-          </div>
+          </motion.div>
 
-          <div className="grid gap-5 md:grid-cols-3">
+          <motion.div
+            className="grid gap-5 md:grid-cols-3"
+            variants={cardGroup}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.25 }}
+          >
             {productCategories.map((item) => (
               <motion.div
                 key={item.name}
-                className="surface-card group overflow-hidden rounded-[2rem]"
-                whileHover={{ y: -8, rotateX: 5, rotateY: -5 }}
-                transition={{ duration: 0.32 }}
+                variants={cardItem}
+                className="surface-card hover-lift group overflow-hidden rounded-[2rem]"
+                whileHover={{ y: -10, rotateX: 6, rotateY: -6, scale: 1.02 }}
+                transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
                 style={{ transformStyle: "preserve-3d" }}
               >
                 <div className="relative flex h-56 items-center justify-center overflow-hidden bg-[linear-gradient(180deg,#f8efe2_0%,#efe0ca_100%)] p-6">
@@ -238,7 +284,7 @@ const Home = () => {
                 </div>
               </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 

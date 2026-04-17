@@ -1,12 +1,12 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import CustomerLayout from '../../dashboard/customer/layout'
 import { useAuth } from '@/app/context/AuthContext'
 import { useRouter } from 'next/navigation'
 import { FiMaximize2, FiSearch } from 'react-icons/fi';
 import axios from 'axios'
 import LayoutBeforeLogin from '../../authentication/layout'
-import { motion } from 'framer-motion'
 import 'primeicons/primeicons.css';
 
 function ProductCard({
@@ -18,6 +18,7 @@ function ProductCard({
   addToCart,
   onPreview,
 }) {
+  const fallbackImage = '/assets/Image/accessories.png'
   const [pointer, setPointer] = useState({ x: 50, y: 50, rotateX: 0, rotateY: 0 })
 
   const handlePointerMove = (event) => {
@@ -34,13 +35,9 @@ function ProductCard({
   }
 
   return (
-    <motion.div
+    <div
       key={product._id}
-      className="group relative overflow-hidden rounded-[1.75rem] border border-[var(--line)] bg-[linear-gradient(180deg,rgba(255,250,242,0.94),rgba(255,255,255,0.86))] shadow-[0_18px_45px_rgba(24,22,19,0.08)]"
-      initial={{ opacity: 0, y: 18 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35 }}
-      whileHover={{ y: -8 }}
+      className="group relative overflow-hidden rounded-[1.75rem] border border-[var(--line)] bg-[linear-gradient(180deg,rgba(255,250,242,0.94),rgba(255,255,255,0.86))] shadow-[0_18px_45px_rgba(24,22,19,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_55px_rgba(24,22,19,0.12)]"
       onMouseMove={handlePointerMove}
       onMouseLeave={resetPointer}
       style={{
@@ -57,40 +54,35 @@ function ProductCard({
       <div className="absolute inset-x-10 top-[-4rem] h-32 rounded-full bg-orange-200/35 blur-3xl transition duration-500 group-hover:scale-125" />
 
       <div className="p-5">
-        {(product.displayImage || product.images?.[0]) && (
-          <div className="relative mb-5 h-60 overflow-hidden rounded-[1.6rem] border border-white/70 bg-[radial-gradient(circle_at_top,#fffdf8_0%,#f7ecde_42%,#ead9bf_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]">
+        {((product.displayImage || product.images?.[0]) || fallbackImage) && (
+          <button
+            type="button"
+            onClick={() => onPreview(product)}
+            className="relative mb-5 h-60 w-full overflow-hidden rounded-[1.6rem] border border-white/70 bg-[radial-gradient(circle_at_top,#fffdf8_0%,#f7ecde_42%,#ead9bf_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]"
+          >
             <div className="absolute left-1/2 top-4 h-28 w-28 -translate-x-1/2 rounded-full bg-orange-200/40 blur-3xl transition duration-500 group-hover:scale-125" />
             <div className="absolute inset-x-7 top-5 h-32 rounded-[1.35rem] bg-white/55 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]" />
             <div className="absolute bottom-5 left-1/2 h-8 w-[68%] -translate-x-1/2 rounded-full bg-black/15 blur-xl transition duration-500 group-hover:scale-110" />
             <div className="absolute inset-x-8 bottom-2 h-20 rounded-[50%] bg-[radial-gradient(circle,rgba(255,255,255,0.52),transparent_70%)]" />
-            <button
-              type="button"
-              onClick={() => onPreview(product)}
-              className="absolute right-4 top-4 z-20 inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/80 px-3 py-2 text-xs font-semibold text-stone-700 shadow-sm backdrop-blur transition hover:bg-white"
-            >
+            <span className="absolute right-4 top-4 z-20 inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/80 px-3 py-2 text-xs font-semibold text-stone-700 shadow-sm backdrop-blur transition hover:bg-white">
               <FiMaximize2 />
               Preview
-            </button>
+            </span>
 
-            <motion.div
-              className="relative flex h-full items-center justify-center p-5"
-              style={{ transformStyle: 'preserve-3d' }}
-              animate={{ y: [0, -4, 0] }}
-              transition={{ duration: 3.8, repeat: Infinity, ease: 'easeInOut' }}
-            >
+            <div className="relative flex h-full items-center justify-center p-5" style={{ transformStyle: 'preserve-3d' }}>
               <img
-                src={product.displayImage || product.images[0]}
+                src={product.displayImage || product.images?.[0] || fallbackImage}
                 alt={product.name}
                 loading="lazy"
                 decoding="async"
-                className="relative z-10 h-full w-full object-contain drop-shadow-[0_24px_35px_rgba(24,22,19,0.24)] transition duration-500 group-hover:-translate-y-3 group-hover:scale-[1.12]"
+                className="relative z-10 h-full w-full object-contain drop-shadow-[0_24px_35px_rgba(24,22,19,0.24)] transition duration-500 group-hover:scale-[1.08]"
                 style={{
                   transform: `translateZ(26px) rotateX(${pointer.rotateX * 0.35}deg) rotateY(${pointer.rotateY * 0.45}deg)`,
                   filter: 'contrast(1.06) saturate(1.08) brightness(1.02)',
                 }}
               />
-            </motion.div>
-          </div>
+            </div>
+          </button>
         )}
 
         <div className="flex flex-col gap-3">
@@ -147,7 +139,7 @@ function ProductCard({
           {product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
         </button>
       </div>
-    </motion.div>
+    </div>
   )
 }
 
@@ -162,6 +154,7 @@ export default function Product() {
   const [checked, setChecked] = useState(false);
   const [previewProduct, setPreviewProduct] = useState(null);
   const [selectedPreviewImage, setSelectedPreviewImage] = useState('');
+  const [isClient, setIsClient] = useState(false);
  
   useEffect(() => {
     if (!auth?.isLoading) {
@@ -201,7 +194,7 @@ export default function Product() {
   }, [searchTerm, selectedCategory, auth])
 
   const getPreviewImages = (product) =>
-    Array.from(new Set([product?.displayImage, ...(product?.images || [])].filter(Boolean)))
+    Array.from(new Set([product?.displayImage, ...(product?.images || []), '/assets/Image/accessories.png'].filter(Boolean)))
 
   const openPreview = (product) => {
     const previewImages = getPreviewImages(product)
@@ -212,6 +205,28 @@ export default function Product() {
   useEffect(() => {
     if (!previewProduct) {
       setSelectedPreviewImage('')
+    }
+  }, [previewProduct])
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  useEffect(() => {
+    if (!previewProduct) return
+
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        setPreviewProduct(null)
+      }
+    }
+
+    document.body.style.overflow = 'hidden'
+    window.addEventListener('keydown', handleEscape)
+
+    return () => {
+      document.body.style.overflow = ''
+      window.removeEventListener('keydown', handleEscape)
     }
   }, [previewProduct])
 
@@ -286,15 +301,21 @@ export default function Product() {
    
 
   const content =(
-      <div className="min-h-screen px-4 py-8 sm:px-6 lg:px-8">
+      <div className="page-enter min-h-screen px-4 py-8 sm:px-6 lg:px-8">
         <div className="section-shell glass-panel overflow-hidden rounded-3xl text-stone-900 shadow-2xl ring-1 ring-white/40">
           {/* Header Section */}
-          <div className="p-6 border-b border-[var(--line)] bg-[linear-gradient(120deg,#fff3e2_0%,#fff7ed_45%,#fbe8d5_100%)]">
+          <div className="border-b border-[var(--line)] bg-[linear-gradient(120deg,#fff3e2_0%,#fff7ed_45%,#fbe8d5_100%)] p-4 sm:p-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <h2 className="text-2xl font-extrabold sm:text-3xl">Products</h2>
+              <div>
+                <p className="pill-label mb-3 w-fit">
+                  <FiSearch className="text-[var(--brand)]" />
+                  Browse Catalog
+                </p>
+                <h2 className="text-2xl font-extrabold sm:text-3xl">Products</h2>
+              </div>
               <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
                 {/* Search Bar */}
-                <div className="relative flex-1 md:min-w-[250px]">
+                <div className="relative flex-1 md:min-w-[220px]">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <FiSearch className="text-stone-500" />
                   </div>
@@ -310,7 +331,7 @@ export default function Product() {
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="bg-[var(--surface)] text-stone-800 px-4 py-3 border border-[var(--line)] rounded-xl w-full sm:w-auto sm:min-w-[180px]"
+                  className="bg-[var(--surface)] text-stone-800 px-4 py-3 border border-[var(--line)] rounded-xl w-full sm:w-auto sm:min-w-[160px]"
                 >
                   {categories.map((category) => (
                     <option key={category} value={category}>
@@ -323,7 +344,7 @@ export default function Product() {
           </div>
 
           {/* Products List */}
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             {Object.keys(productsByCategory).length > 0 ? (
               Object.entries(productsByCategory).map(([category, categoryProducts]) => (
                 <div key={category} className="mb-10">
@@ -358,30 +379,33 @@ export default function Product() {
           </div>
         </div>
 
-        {previewProduct && (
-          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-[rgba(20,16,12,0.72)] p-4 backdrop-blur-md">
-            <div className="relative max-h-[92vh] w-full max-w-6xl overflow-y-auto rounded-[2rem] border border-white/15 bg-[linear-gradient(145deg,#fff8ef_0%,#fffaf4_45%,#f2e5d2_100%)] shadow-[0_28px_80px_rgba(18,14,10,0.35)]">
+        {isClient && previewProduct && createPortal(
+          <div
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(20,16,12,0.72)] p-4 backdrop-blur-md"
+            onClick={() => setPreviewProduct(null)}
+          >
+            <div
+              className="relative max-h-[92vh] w-full max-w-6xl overflow-y-auto rounded-[1.5rem] border border-white/15 bg-[linear-gradient(145deg,#fff8ef_0%,#fffaf4_45%,#f2e5d2_100%)] shadow-[0_28px_80px_rgba(18,14,10,0.35)] sm:rounded-[2rem]"
+              onClick={(event) => event.stopPropagation()}
+            >
               <button
                 type="button"
                 onClick={() => setPreviewProduct(null)}
-                className="absolute right-4 top-4 z-20 rounded-full border border-[var(--line)] bg-white/85 px-4 py-2 text-sm font-semibold text-stone-700 shadow-sm transition hover:bg-white sm:right-5 sm:top-5"
+                className="absolute right-3 top-3 z-20 rounded-full border border-[var(--line)] bg-white/85 px-3 py-2 text-xs font-semibold text-stone-700 shadow-sm transition hover:bg-white sm:right-5 sm:top-5 sm:px-4 sm:text-sm"
               >
                 Close
               </button>
               <div className="grid gap-0 lg:grid-cols-[1.08fr_0.92fr]">
-                <div className="relative min-h-[320px] overflow-hidden border-b border-[var(--line)] bg-[radial-gradient(circle_at_top,#fffefb_0%,#f7ecde_46%,#e9d6b8_100%)] p-4 sm:p-6 lg:min-h-[620px] lg:border-b-0 lg:border-r">
+                <div className="relative min-h-[260px] overflow-hidden border-b border-[var(--line)] bg-[radial-gradient(circle_at_top,#fffefb_0%,#f7ecde_46%,#e9d6b8_100%)] p-4 sm:min-h-[320px] sm:p-6 lg:min-h-[620px] lg:border-b-0 lg:border-r">
                   <div className="absolute left-1/2 top-8 h-36 w-36 -translate-x-1/2 rounded-full bg-orange-200/40 blur-3xl" />
                   <div className="absolute inset-x-10 top-10 h-44 rounded-[2rem] bg-white/55 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]" />
                   <div className="absolute bottom-10 left-1/2 h-10 w-[70%] -translate-x-1/2 rounded-full bg-black/15 blur-2xl" />
                   <div className="relative flex h-full items-center justify-center [perspective:1800px]">
                     {selectedPreviewImage && (
-                      <motion.img
-                        src={selectedPreviewImage}
+                      <img
+                        src={selectedPreviewImage || '/assets/Image/accessories.png'}
                         alt={previewProduct.name}
                         className="max-h-[260px] w-full object-contain drop-shadow-[0_36px_48px_rgba(24,22,19,0.28)] sm:max-h-[420px] lg:max-h-[520px]"
-                        initial={{ opacity: 0, scale: 0.95, y: 12 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        transition={{ duration: 0.35 }}
                         style={{ filter: 'contrast(1.08) saturate(1.1) brightness(1.03)' }}
                       />
                     )}
@@ -401,7 +425,7 @@ export default function Product() {
                           }`}
                         >
                           <img
-                            src={image}
+                            src={image || '/assets/Image/accessories.png'}
                             alt={previewProduct.name}
                             className="h-16 w-full object-contain sm:h-20"
                           />
@@ -411,7 +435,7 @@ export default function Product() {
                   )}
                 </div>
 
-                <div className="flex flex-col justify-between p-5 sm:p-8">
+                <div className="flex flex-col justify-between p-4 sm:p-8">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-500">
                       Modern Product View
@@ -460,7 +484,8 @@ export default function Product() {
                 </div>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
       </div>
   )

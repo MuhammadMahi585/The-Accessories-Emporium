@@ -3,8 +3,8 @@ import mongoose from "mongoose";
 const paymentSchema = new mongoose.Schema({
   order: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Order",
-    required: [true, "Order reference is required"]
+    ref: "Orders",
+    required: false
   },
   user: {
     type: mongoose.Schema.Types.ObjectId,
@@ -13,7 +13,7 @@ const paymentSchema = new mongoose.Schema({
   },
   method: {
     type: String,
-    enum: ["EasyPaisa", "JazzCash", "Bank", "Cash on Delivery"],
+    enum: ["EasyPaisa", "JazzCash", "Bank"],
     required: [true, "Payment method is required"]
   },
   amount: {
@@ -26,6 +26,32 @@ const paymentSchema = new mongoose.Schema({
     enum: ["pending", "completed", "failed", "refunded"],
     default: "pending"
   },
+  reviewStatus: {
+    type: String,
+    enum: ["pending", "approved", "rejected", "not_required"],
+    default: "pending"
+  },
+  paymentProofUrl: {
+    type: String,
+    default: ""
+  },
+  paymentRef: {
+    type: String,
+    default: ""
+  },
+  shippingAddress: {
+    street: { type: String },
+    city: { type: String },
+    state: { type: String },
+    postalCode: { type: String },
+    country: { type: String, default: "Pakistan" }
+  },
+  cartSnapshot: [{
+    product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+    name: { type: String },
+    priceAtPurchase: { type: Number },
+    quantity: { type: Number }
+  }],
   // Gateway-specific fields
   gatewayDetails: {
     transactionId: String,          // JazzCash/EasyPaisa transaction ID
@@ -47,14 +73,17 @@ const paymentSchema = new mongoose.Schema({
   // Audit Log
   ipAddress: String,               // Capture payer's IP
   deviceInfo: String,              // User agent/browser
-  gatewayResponse: Object          // Raw response from payment provider
+  gatewayResponse: Object,          // Raw response from payment provider
+  reviewedAt: Date,
+  reviewNote: String
 }, { 
   timestamps: true 
 });
 
 // Add indexes for faster queries
 paymentSchema.index({ order: 1 });
-paymentSchema.index({ transactionId: 1 }, { unique: true, sparse: true });
+paymentSchema.index({ paymentRef: 1 }, { unique: true, sparse: true });
+paymentSchema.index({ "gatewayDetails.transactionId": 1 }, { unique: true, sparse: true });
 
 const Payment = mongoose.model("Payment", paymentSchema);
 export default Payment;

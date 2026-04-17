@@ -8,7 +8,7 @@ export default function LayoutBeforeLogin({ children }) {
         {/* Navigation stays fixed */}
         <PublicNavigation />
         {/* Main content */}
-        <main className="flex-grow">{children}</main> {/* Adjust padding here if necessary */}
+        <main className="page-enter flex-grow">{children}</main>
         <StoreAssistant />
       </div>
     );

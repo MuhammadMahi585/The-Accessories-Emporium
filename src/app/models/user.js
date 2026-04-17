@@ -48,7 +48,15 @@ const userSchema = new mongoose.Schema({
   postalCode: { type: String },
   country: { type: String, default: "Pakistan" },
   isDefault: { type: Boolean, default: true }
-}] 
+}],
+  resetPasswordToken: {
+    type: String,
+    default: null,
+  },
+  resetPasswordExpires: {
+    type: Date,
+    default: null,
+  }
 }, { timestamps: true });
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);

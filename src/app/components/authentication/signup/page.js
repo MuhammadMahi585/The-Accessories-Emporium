@@ -103,9 +103,9 @@ export default function SignupPage() {
   const letters = "The Accesories Emporium".split("")
 
   return (
-    <div className="flex flex-col">
-      <div className="flex min-h-screen flex-col xl:flex-row">
-        <div className="ambient-grid relative flex w-full flex-col justify-center overflow-hidden bg-[linear-gradient(160deg,#15100c_0%,#2f1d10_60%,#573116_100%)] p-6 text-white shadow-lg md:p-10 xl:h-screen xl:w-[46%] xl:p-12">
+    <div className="flex min-h-screen flex-col">
+      <div className="flex min-h-screen flex-col lg:flex-row">
+        <div className="ambient-grid relative flex w-full flex-col justify-center overflow-hidden bg-[linear-gradient(160deg,#15100c_0%,#2f1d10_60%,#573116_100%)] p-6 text-white shadow-lg md:p-10 lg:w-[46%] lg:p-12">
           <div className="absolute -top-20 left-10 h-72 w-72 rounded-full bg-orange-500/25 blur-3xl" />
           <div className="absolute bottom-10 right-10 h-48 w-48 rounded-full bg-amber-300/20 blur-2xl" />
           <div className="relative z-10 mx-auto max-w-2xl xl:mx-0 xl:max-w-md">
@@ -150,7 +150,7 @@ export default function SignupPage() {
           </div>
         </div>
 
-        <div className="flex w-full items-center justify-center overflow-auto p-5 sm:p-8 lg:p-10 xl:h-screen xl:w-[54%] xl:p-12">
+        <div className="flex w-full items-center justify-center overflow-auto p-5 sm:p-8 lg:w-[54%] lg:p-10 xl:p-12">
           <div className="surface-card w-full max-w-2xl rounded-[2rem] p-6 sm:p-8">
             <p className="mb-3 text-xs uppercase tracking-[0.22em] text-stone-500">Get Started</p>
             <h2 className="mb-6 text-3xl font-extrabold text-stone-900 sm:text-4xl">Create Account</h2>

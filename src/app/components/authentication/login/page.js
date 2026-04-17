@@ -87,18 +87,18 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <div className="flex min-h-screen flex-col xl:flex-row">
-        <div className="ambient-grid relative w-full overflow-hidden bg-[linear-gradient(145deg,#1b140f_0%,#2a1c13_50%,#442713_100%)] p-6 text-white sm:p-10 lg:p-12 xl:w-[55%] xl:p-16">
-          <div className="absolute -top-20 -right-20 h-72 w-72 rounded-full bg-orange-500/20 blur-3xl" />
-          <div className="absolute bottom-8 left-10 h-44 w-44 rounded-full bg-amber-300/20 blur-2xl" />
+    <div className="page-enter flex min-h-screen flex-col">
+      <div className="flex min-h-screen flex-col lg:flex-row">
+        <div className="ambient-grid relative w-full overflow-hidden bg-[linear-gradient(145deg,#1b140f_0%,#2a1c13_50%,#442713_100%)] p-6 text-white sm:p-10 lg:w-1/2 lg:p-12 xl:p-16">
+          <div className="glow-drift absolute -top-20 -right-20 h-72 w-72 rounded-full bg-orange-500/20 blur-3xl" />
+          <div className="float-slow absolute bottom-8 left-10 h-44 w-44 rounded-full bg-amber-300/20 blur-2xl" />
           <div className="relative z-10 mx-auto max-w-4xl xl:mx-0 xl:max-w-5xl">
             <span className="pill-label mb-5 border-white/15 bg-white/10 text-orange-50">The Accesories Emporium</span>
             <motion.div
               variants={container}
               initial="hidden"
               animate="visible"
-              className="mb-4 max-w-4xl text-3xl font-extrabold leading-tight sm:text-4xl lg:text-[2.8rem] xl:text-5xl"
+              className="mb-4 max-w-4xl text-3xl font-extrabold leading-tight drop-shadow-[0_16px_34px_rgba(0,0,0,0.24)] sm:text-4xl lg:text-[2.8rem] xl:text-5xl"
             >
               {letters.map((char, i) => (
                 <motion.span key={i} variants={child}>
@@ -110,14 +110,14 @@ export default function LoginPage() {
               Premium systems, reliable accessories, and support that keeps your tech moving.
             </p>
 
-            <div className="mt-8 grid max-w-4xl gap-3 text-sm sm:grid-cols-2 xl:mt-10">
+            <div className="stagger-rise mt-8 grid max-w-4xl gap-3 text-sm sm:grid-cols-2 xl:mt-10">
               {[
                 { icon: FiTruck, title: "Fast delivery", text: "Local order handling with dependable updates." },
                 { icon: FiShield, title: "Trusted products", text: "Built around quality, compatibility, and value." },
                 { icon: FiShoppingBag, title: "Easy ordering", text: "Browse, save, and return to orders quickly." },
                 { icon: FiMapPin, title: "Store support", text: "Visit the branch when you want in-person help." },
               ].map(({ icon: Icon, title, text }) => (
-                <div key={title} className="glass-panel rounded-2xl p-4 text-stone-800">
+                <div key={title} className="glass-panel hover-lift rounded-2xl p-4 text-stone-800">
                   <div className="flex items-start gap-3">
                     <div className="rounded-xl bg-[rgba(229,88,18,0.12)] p-2 text-[var(--brand)]">
                       <Icon />
@@ -133,8 +133,8 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="flex w-full items-center justify-center p-5 sm:p-8 lg:p-10 xl:w-[45%] xl:p-12">
-          <div className="surface-card w-full max-w-md rounded-[2rem] p-6 sm:p-8">
+        <div className="flex w-full items-center justify-center p-5 sm:p-8 lg:w-1/2 lg:p-10 xl:p-12">
+          <div className="surface-card hover-lift w-full max-w-md rounded-[2rem] p-7 sm:p-9">
             <p className="mb-3 text-xs uppercase tracking-[0.2em] text-stone-500">Member Access</p>
             <h2 className="mb-2 text-3xl font-extrabold text-stone-900 sm:text-4xl">Welcome Back</h2>
             <p className="mb-6 text-sm leading-relaxed text-stone-600">Sign in to continue shopping and manage your orders.</p>
@@ -164,26 +164,32 @@ export default function LoginPage() {
                   className="mt-1 block w-full rounded-xl border border-[var(--line)] bg-[var(--surface)] px-4 py-3 text-stone-800 shadow-sm"
                 />
               </div>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <label className="flex items-center text-sm text-stone-600">
-                  <input type="checkbox" className="mr-2 h-4 w-4 rounded border-[var(--line)]" />
-                  Remember me
-                </label>
-                <Link href="./signup" className="text-[var(--brand)] hover:underline">Create account</Link>
-              </div>
               <button
                 type="submit"
                 disabled={loading}
-                className={`brand-button flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold shadow-lg ${
+                className={`brand-button shine-sweep flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold shadow-lg ${
                   loading ? "cursor-not-allowed opacity-70" : "hover:opacity-90"
                 }`}
               >
                 {loading ? "Signing in..." : "Sign in"}
                 {!loading && <FiArrowRight />}
               </button>
+
+              <div className="space-y-3 rounded-2xl border border-[var(--line)] bg-white/70 p-4 text-center">
+                <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Need help?</p>
+                <div className="flex flex-col items-center gap-2 sm:flex-row sm:justify-center sm:gap-6">
+                  <Link href="/components/authentication/forgot-password" className="text-sm font-semibold text-[var(--brand)] hover:underline">
+                    Forgot password?
+                  </Link>
+                  <span className="hidden text-stone-400 sm:inline">|</span>
+                  <Link href="./signup" className="text-sm font-semibold text-[var(--brand)] hover:underline">
+                    Create account
+                  </Link>
+                </div>
+              </div>
             </form>
 
-            <div className="mt-6 rounded-2xl border border-[var(--line)] bg-white/70 p-4">
+            <div className="mt-6 rounded-2xl border border-[var(--line)] bg-white/70 p-4 shadow-[0_12px_28px_rgba(24,22,19,0.06)]">
               <div className="flex items-start gap-3">
                 <div className="rounded-full bg-orange-100 p-2 text-[var(--brand)]">
                   <FiCheckCircle />

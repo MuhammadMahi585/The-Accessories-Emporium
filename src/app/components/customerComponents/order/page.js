@@ -4,7 +4,7 @@ import CustomerLayout from '../../dashboard/customer/layout'
 import { useAuth } from '@/app/context/AuthContext'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
-import { FiArrowRight, FiCheckCircle, FiClock, FiMapPin, FiPackage, FiShoppingBag, FiTruck } from 'react-icons/fi'
+import { FiArrowRight, FiCheckCircle, FiClock, FiMapPin, FiPackage, FiShield, FiShoppingBag, FiTruck } from 'react-icons/fi'
 import 'primeicons/primeicons.css'
 
 export default function Order() {
@@ -146,13 +146,17 @@ export default function Order() {
                               <StatusIcon />
                               <span className="capitalize">{order.status}</span>
                             </div>
+                                <div className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${order.paymentStatus === 'completed' ? 'bg-emerald-100 text-emerald-700' : order.paymentStatus === 'failed' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                                  <FiShield />
+                                  <span className="capitalize">{order.paymentMethod || 'N/A'} · {order.paymentStatus || 'pending'}</span>
+                                </div>
                             <div className="rounded-full border border-[var(--line)] bg-white/70 px-4 py-2 text-sm font-semibold text-stone-800">
                               Rs. {order.totalAmount.toLocaleString()}
                             </div>
                           </div>
                         </div>
 
-                        <div className="mt-6 grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
+                        <div className="mt-6 grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
                           <div className="rounded-[1.5rem] border border-[var(--line)] bg-white/70 p-5">
                             <div className="mb-4 flex items-center gap-2">
                               <FiMapPin className="text-[var(--brand)]" />
@@ -186,6 +190,26 @@ export default function Order() {
                               ))}
                             </div>
                           </div>
+                        </div>
+
+                        <div className="mt-5 rounded-[1.5rem] border border-[var(--line)] bg-white/70 p-5 text-sm text-stone-700">
+                          <p className="mb-2 font-semibold text-stone-900">Payment details</p>
+                          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                            <p><span className="font-medium text-stone-900">Method:</span> {order.paymentMethod || 'N/A'}</p>
+                            <p><span className="font-medium text-stone-900">Status:</span> {order.paymentStatus || 'pending'}</p>
+                            <p><span className="font-medium text-stone-900">Reference:</span> {order.paymentRef || 'N/A'}</p>
+                            <p><span className="font-medium text-stone-900">Reviewed:</span> {order.paymentReviewedAt ? new Date(order.paymentReviewedAt).toLocaleString() : 'N/A'}</p>
+                          </div>
+                          {order.paymentProofUrl && (
+                            <a
+                              href={order.paymentProofUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="mt-3 inline-flex rounded-full border border-[var(--line)] bg-white px-4 py-2 text-xs font-semibold text-stone-700 transition hover:bg-[var(--surface)]"
+                            >
+                              View payment proof
+                            </a>
+                          )}
                         </div>
                       </div>
                     )

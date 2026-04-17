@@ -274,7 +274,7 @@ export default function Profile() {
                     </div>
                   </div>
 
-                  <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+                  <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
                     <div className="space-y-6">
                       <div className="surface-card rounded-[1.75rem] p-6">
                         <div className="mb-5 flex items-center gap-3">

@@ -20,6 +20,11 @@ export async function GET() {
         orderId: order._id,
         totalAmount: order.totalAmount,
         shippingAddress: order.shippingAddress,
+        paymentMethod: order.paymentMethod,
+        paymentStatus: order.paymentStatus,
+        paymentRef: order.paymentRef,
+        paymentProofUrl: order.paymentProofUrl,
+        paymentReviewedAt: order.paymentReviewedAt,
         status: order.status,
         createdAt: order.createdAt,
         items: order.items.map(item => ({

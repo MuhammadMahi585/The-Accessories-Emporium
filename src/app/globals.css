@@ -19,6 +19,59 @@
   --font-mono: var(--font-space);
 }
 
+@keyframes pageEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+    filter: blur(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes softFloat {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(0, -12px, 0) rotate(1.5deg);
+  }
+}
+
+@keyframes driftGlow {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(14px, -10px, 0) scale(1.04);
+  }
+}
+
+@keyframes sweepShine {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+@keyframes staggerRise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -117,6 +170,49 @@ button:focus-visible {
   border: 1px solid rgba(232, 220, 201, 0.9);
   background: linear-gradient(180deg, rgba(255, 250, 242, 0.96), rgba(255, 255, 255, 0.84));
   box-shadow: 0 18px 45px rgba(24, 22, 19, 0.08);
+}
+
+.page-enter {
+  animation: pageEnter 760ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.float-slow {
+  animation: softFloat 8s ease-in-out infinite;
+}
+
+.float-medium {
+  animation: softFloat 6.5s ease-in-out infinite;
+}
+
+.glow-drift {
+  animation: driftGlow 10s ease-in-out infinite;
+}
+
+.shine-sweep {
+  background-size: 200% 100%;
+  animation: sweepShine 7s linear infinite;
+}
+
+.stagger-rise > * {
+  animation: staggerRise 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.stagger-rise > *:nth-child(1) { animation-delay: 60ms; }
+.stagger-rise > *:nth-child(2) { animation-delay: 120ms; }
+.stagger-rise > *:nth-child(3) { animation-delay: 180ms; }
+.stagger-rise > *:nth-child(4) { animation-delay: 240ms; }
+.stagger-rise > *:nth-child(5) { animation-delay: 300ms; }
+.stagger-rise > *:nth-child(6) { animation-delay: 360ms; }
+.stagger-rise > *:nth-child(7) { animation-delay: 420ms; }
+.stagger-rise > *:nth-child(8) { animation-delay: 480ms; }
+
+.hover-lift {
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 50px rgba(24, 22, 19, 0.12);
 }
 
 .pill-label {

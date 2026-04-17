@@ -120,20 +120,20 @@ export default function StoreAssistant() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 18, scale: 0.96 }}
             transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed bottom-24 right-3 z-[60] w-[min(420px,calc(100vw-1.5rem))] overflow-hidden rounded-[1.75rem] border border-[var(--line)] bg-[rgba(255,250,242,0.96)] shadow-[0_24px_80px_rgba(24,22,19,0.18)] backdrop-blur-xl sm:right-4"
+            className="fixed inset-x-2 bottom-20 z-[60] max-h-[78vh] overflow-hidden rounded-[1.5rem] border border-[var(--line)] bg-[rgba(255,250,242,0.96)] shadow-[0_24px_80px_rgba(24,22,19,0.18)] backdrop-blur-xl sm:inset-x-auto sm:bottom-24 sm:right-4 sm:w-[420px] sm:max-h-[unset] sm:rounded-[1.75rem]"
           >
-            <div className="border-b border-[var(--line)] bg-[linear-gradient(135deg,#fff6ea_0%,#fffaf4_45%,#f7ead7_100%)] px-5 py-4">
+            <div className="border-b border-[var(--line)] bg-[linear-gradient(135deg,#fff6ea_0%,#fffaf4_45%,#f7ead7_100%)] px-4 py-4 sm:px-5">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#231710_0%,#6f3b18_100%)] text-sm font-extrabold text-orange-100 shadow-lg shadow-orange-900/20">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#231710_0%,#6f3b18_100%)] text-sm font-extrabold text-orange-100 shadow-lg shadow-orange-900/20 sm:h-12 sm:w-12">
                     <div className="text-center leading-none">
                       <div className="text-[0.68rem] tracking-[0.16em]">BT</div>
                     </div>
                   </div>
                   <div>
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-stone-500">Beat Assistant</p>
-                    <h3 className="mt-1 text-xl font-bold text-stone-900">Ask Beat about the store</h3>
-                    <p className="mt-1 text-sm text-stone-600">Product guidance, order help, account support, and quick website answers.</p>
+                    <h3 className="mt-1 text-lg font-bold text-stone-900 sm:text-xl">Ask Beat about the store</h3>
+                    <p className="mt-1 text-xs text-stone-600 sm:text-sm">Product guidance, order help, account support, and quick website answers.</p>
                   </div>
                 </div>
                 <button
@@ -146,7 +146,7 @@ export default function StoreAssistant() {
               </div>
             </div>
 
-            <div className="max-h-[420px] overflow-y-auto px-4 py-4">
+            <div className="max-h-[56vh] overflow-y-auto px-4 py-4 sm:max-h-[420px]">
               <div className="flex flex-wrap gap-2 pb-3">
                 {quickQuestions.map((question) => (
                   <button
